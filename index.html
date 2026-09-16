@@ -1288,29 +1288,185 @@ function buildPdfDocumentHtml(){
  css=css.replace(/@media\\s+print\\s*\\{/g,"@media all{");
  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style></head><body><div id="printHead">${detailedPrintHtml()}</div></body></html>`;
 }
+
+function pdfSafeText(value){
+  return String(value==null?"":value).replace(/[\r\n\t]+/g," ").replace(/\s+/g," ").trim();
+}
+function pdfFileBaseName(){
+  const c=C();
+  const raw=`ESB_Bestellliste_${(c&&((c.project||c.name)))||"Projekt"}_${currentDateISO()}`;
+  return raw.replace(/[\\/:*?"<>|]+/g,"-").replace(/\s+/g,"_").slice(0,100);
+}
+function winAnsiBytes(str){
+  const extra={8364:128,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,352:138,8249:139,338:140,381:142,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,732:152,8482:153,353:154,8250:155,339:156,382:158,376:159};
+  const out=[];
+  for(const ch of String(str)){
+    const cp=ch.codePointAt(0);
+    if(cp<=255) out.push(cp);
+    else if(extra[cp]!=null) out.push(extra[cp]);
+    else out.push(63);
+  }
+  return new Uint8Array(out);
+}
+function pdfEscapeText(str){
+  return pdfSafeText(str).replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)");
+}
+function pdfApproxWidth(text,size){
+  return pdfSafeText(text).length*size*0.50;
+}
+function buildProfessionalPdfBlob(){
+  const d=buildDetailedOrderData(),c=d.customer;
+  const W=595,H=842,left=42,right=553;
+  const pages=[];
+  let ops=[],y=0,pageNo=1;
+  const line=(x1,y1,x2,y2,w=0.6,gray=0.82)=>ops.push(`${w} w ${gray} G ${x1} ${y1} m ${x2} ${y2} l S`);
+  const text=(x,yy,txt,size=10,bold=false,gray=0)=>{
+    const safe=pdfEscapeText(txt);
+    ops.push(`BT ${gray} g /${bold?'F2':'F1'} ${size} Tf ${x.toFixed(1)} ${yy.toFixed(1)} Td (${safe}) Tj ET`);
+  };
+  const rightText=(xRight,yy,txt,size=10,bold=false,gray=0)=>{
+    const x=Math.max(left,xRight-pdfApproxWidth(txt,size));
+    text(x,yy,txt,size,bold,gray);
+  };
+  function pageHeader(){
+    ops.push(`0.07 0.10 0.16 rg ${left} 775 511 42 re f`);
+    text(left+14,800,"ELEKTRO STAMPFL & BRUNNER",14,true,1);
+    text(left+14,784,"BESTELLLISTE",10,true,1);
+    rightText(right-12,784,`Seite ${pageNo}`,9,false,1);
+    y=752;
+  }
+  function finishPage(){
+    line(left,32,right,32,0.5,0.82);
+    text(left,18,`ESB Zählliste · ${currentDateDE()}`,8,false,0.45);
+    pages.push(ops.join("\n"));
+    ops=[]; pageNo++; pageHeader();
+  }
+  function need(h){ if(y-h<46) finishPage(); }
+  function heading(txt,size=14){
+    need(size+18); y-=4; text(left,y,txt,size,true,0.08); y-=size+7; line(left,y+2,right,y+2,0.8,0.72);
+  }
+  function subheading(txt){
+    need(24); text(left,y,txt,11,true,0.12); y-=17;
+  }
+  function meta(label,value){
+    if(!pdfSafeText(value))return;
+    need(18); text(left,y,label,9,true,0.35); text(left+108,y,pdfSafeText(value),9,false,0.12); y-=15;
+  }
+  function itemRow(name,qty,emph=false){
+    need(16);
+    if(emph) ops.push(`0.94 0.97 0.94 rg ${left-3} ${y-4} 514 14 re f`);
+    text(left,y,pdfSafeText(name),9,emph,0.12);
+    rightText(right,y,pdfSafeText(qty),9,true,0.12);
+    line(left,y-4,right,y-4,0.35,0.90);
+    y-=14;
+  }
+  function categoryLabel(txt){
+    need(18); text(left+8,y,pdfSafeText(txt).toUpperCase(),8,true,0.35); y-=13;
+  }
+  pageHeader();
+  heading(pdfSafeText(c.project||c.name||"Projekt"),16);
+  meta("Kunde / Projekt",c.name||"");
+  meta("Projekt",c.project||"");
+  meta("Adresse",c.address||"");
+  meta("Schalterprogramm",c.brand||"");
+  meta("Datum",currentDateDE());
+  if(c.note) meta("Notiz",c.note);
+  y-=6;
+
+  d.apartments.forEach(ap=>{
+    heading(ap.name,13);
+    if(ap.customerName) meta("Kunde / Bewohner",ap.customerName);
+    ap.rooms.forEach(r=>{
+      subheading(r.name);
+      r.categories.forEach(cat=>{
+        categoryLabel(cat.title);
+        cat.items.forEach(i=>itemRow(i.name,`${formatQty(i.count,i.unit)} ${i.unit}`));
+        y-=4;
+      });
+    });
+    need(28); text(left,y,`SUMME ${ap.name}`.toUpperCase(),10,true,0.12); y-=16;
+    ap.totalOrder.forEach(cat=>{
+      const used=Object.entries(ap.totals[cat]||{}).filter(([_,o])=>Number(o.count||0)>0);
+      if(!used.length)return;
+      categoryLabel(cat);
+      used.forEach(([name,o])=>itemRow(name,`${formatQty(o.count,o.unit)} ${o.unit}`,true));
+    });
+    y-=8;
+  });
+
+  heading("GESAMTSUMME / BESTELLLISTE PROJEKT",14);
+  text(left,y,"Alle Wohnungen zusammengezählt",9,false,0.35); y-=18;
+  d.categoryOrder.forEach(cat=>{
+    const used=Object.entries(d.grand[cat]||{}).filter(([_,o])=>Number(o.count||0)>0);
+    if(!used.length)return;
+    categoryLabel(cat);
+    used.forEach(([name,o])=>itemRow(name,`${formatQty(o.count,o.unit)} ${o.unit}`,true));
+    y-=4;
+  });
+  line(left,32,right,32,0.5,0.82);
+  text(left,18,`ESB Zählliste · ${currentDateDE()}`,8,false,0.45);
+  pages.push(ops.join("\n"));
+
+  const objects=[];
+  objects[1]="<< /Type /Catalog /Pages 2 0 R >>";
+  const font1=3,font2=4;
+  objects[font1]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+  objects[font2]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+  const kids=[];
+  let objNo=5;
+  for(const content of pages){
+    const contentNo=objNo++, pageObjNo=objNo++;
+    const contentBytes=winAnsiBytes(content);
+    objects[contentNo]={stream:contentBytes};
+    objects[pageObjNo]=`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 ${font1} 0 R /F2 ${font2} 0 R >> >> /Contents ${contentNo} 0 R >>`;
+    kids.push(`${pageObjNo} 0 R`);
+  }
+  objects[2]=`<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${pages.length} >>`;
+
+  const chunks=[]; let offset=0; const offsets=[];
+  const pushBytes=b=>{chunks.push(b);offset+=b.length};
+  const pushStr=t=>pushBytes(winAnsiBytes(t));
+  pushStr("%PDF-1.4\n%âãÏÓ\n");
+  for(let i=1;i<objects.length;i++){
+    if(!objects[i])continue;
+    offsets[i]=offset;
+    pushStr(`${i} 0 obj\n`);
+    if(typeof objects[i]==="string"){
+      pushStr(objects[i]+"\nendobj\n");
+    }else{
+      const b=objects[i].stream;
+      pushStr(`<< /Length ${b.length} >>\nstream\n`); pushBytes(b); pushStr("\nendstream\nendobj\n");
+    }
+  }
+  const xref=offset;
+  pushStr(`xref\n0 ${objects.length}\n0000000000 65535 f \n`);
+  for(let i=1;i<objects.length;i++){
+    const off=offsets[i]||0;
+    pushStr(String(off).padStart(10,"0")+" 00000 n \n");
+  }
+  pushStr(`trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(chunks,{type:"application/pdf"});
+}
+function openProfessionalPdf(){
+  const blob=buildProfessionalPdfBlob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.target="_blank"; a.rel="noopener"; a.download=pdfFileBaseName()+".pdf";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+
 function printList(){
- if(!C()){
-   alert("Bitte zuerst ein Projekt auswählen.");
-   return;
- }
-
- const title=`ESB Zählliste - ${C().name} - ${currentDateDE()}`;
- const pdfHtml=buildPdfDocumentHtml();
-
- if(typeof window!=="undefined" && window.AndroidApp && typeof window.AndroidApp.openExactHtmlPdf==="function"){
-   window.AndroidApp.openExactHtmlPdf(title,pdfHtml);
-   return;
- }
-
- const ph=document.getElementById("printHead");
- if(!ph)return;
- const old=ph.innerHTML,oldTitle=document.title;
- ph.innerHTML=detailedPrintHtml();
- document.title=title;
- setTimeout(()=>{
-   window.print();
-   setTimeout(()=>{ph.innerHTML=old;document.title=oldTitle;},500);
- },120);
+  if(!C()){
+    alert("Bitte zuerst ein Projekt auswählen.");
+    return;
+  }
+  try{
+    openProfessionalPdf();
+  }catch(e){
+    console.error(e);
+    alert("Die PDF konnte nicht erstellt werden. Bitte die Seite neu laden und nochmals versuchen.");
+  }
 }
 
 function buildEmailPdfData(){
@@ -1366,34 +1522,28 @@ function buildEmailPdfData(){
 }
 
 async function shareList(){
- if(!C()){
-   alert("Bitte zuerst ein Projekt auswählen.");
-   return;
- }
-
- const title=`ESB Zählliste - ${C().name} - ${currentDateDE()}`;
- const text=detailedOrderText();
- const pdfHtml=buildPdfDocumentHtml();
-
- if(typeof window!=="undefined" && window.AndroidApp && typeof window.AndroidApp.sendExactHtmlPdfEmail==="function"){
-   window.AndroidApp.sendExactHtmlPdfEmail(title,pdfHtml,text);
-   return;
- }
-
- if(navigator.share){
-   try{
-     await navigator.share({title,text});
-     return;
-   }catch(e){
-     if(e && e.name==="AbortError") return;
-   }
- }
- try{
-   await navigator.clipboard.writeText(text);
-   alert("Bestellliste kopiert. Du kannst sie jetzt in Mail oder WhatsApp einfügen. Für eine PDF bitte 'PDF / Drucken' verwenden.");
- }catch(e){
-   modal("Bestellliste",`<textarea style="height:260px">${esc(text)}</textarea>`,closeModal);
- }
+  if(!C()){
+    alert("Bitte zuerst ein Projekt auswählen.");
+    return;
+  }
+  try{
+    const blob=buildProfessionalPdfBlob();
+    const file=new File([blob],pdfFileBaseName()+".pdf",{type:"application/pdf"});
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      await navigator.share({title:`ESB Bestellliste - ${C().name}`,text:"ESB Bestellliste als PDF",files:[file]});
+      return;
+    }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=file.name; a.target="_blank"; a.rel="noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    alert("PDF wurde erstellt. Du kannst sie jetzt über das iPad-Teilen-Menü per E-Mail senden.");
+  }catch(e){
+    if(e && e.name==="AbortError") return;
+    console.error(e);
+    alert("Teilen war nicht möglich. Bitte zuerst 'Bestellliste / PDF öffnen' verwenden.");
+  }
 }
 function backup(){const json=JSON.stringify(data,null,2);if(window.AndroidApp&&AndroidApp.saveBackup){AndroidApp.saveBackup(json);return}const b=new Blob([json],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=`ESB_Zaehlliste_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function restore(){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=()=>{const f=i.files&&i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.customers)||!d.customers.length)throw 0;data=d;save();render();alert("Sicherung geladen.")}catch{alert("Ungültige Sicherung.")}};r.readAsText(f)};i.click()}
