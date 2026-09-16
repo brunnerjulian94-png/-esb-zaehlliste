@@ -916,10 +916,17 @@ function switchCustomer(id){
  render();
 }function switchRoom(id){C().room=id;cat="Alle";const s=document.getElementById("search");if(s)s.value="";save();render()}function nextRoom(){
  const c=C();
- if(!c.rooms||!c.rooms.length)return;
- const currentIndex=c.rooms.findIndex(x=>x.id===c.room);
- const nextIndex=currentIndex<0?0:(currentIndex+1)%c.rooms.length;
- c.room=c.rooms[nextIndex].id;
+ if(!c||!c.rooms||!c.rooms.length)return;
+
+ // Beim Wechsel zum nächsten Raum immer in der aktuell gewählten Wohnung bleiben.
+ const current=c.rooms.find(x=>x.id===c.room);
+ const apartment=(current&&current.apartment)||"Allgemein";
+ const apartmentRooms=c.rooms.filter(r=>(r.apartment||"Allgemein")===apartment);
+ if(!apartmentRooms.length)return;
+
+ const currentIndex=apartmentRooms.findIndex(x=>x.id===c.room);
+ const nextIndex=currentIndex<0?0:(currentIndex+1)%apartmentRooms.length;
+ c.room=apartmentRooms[nextIndex].id;
  cat="Alle";
  const s=document.getElementById("search");
  if(s)s.value="";
