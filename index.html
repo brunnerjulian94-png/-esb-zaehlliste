@@ -1,0 +1,1896 @@
+<!doctype html>
+<html lang="de"><head>
+
+<script>
+(function(){
+  if(window.AndroidApp) return;
+  const handlers=window.webkit&&window.webkit.messageHandlers;
+  if(!handlers) return;
+  const post=(name,args)=>{ const h=handlers&&handlers[name]; if(h) h.postMessage(args||{}); };
+  window.AndroidApp={
+    loadData:function(){ try{return localStorage.getItem("esb_data")||"";}catch(e){return "";} },
+    saveData:function(json){ try{localStorage.setItem("esb_data",json);}catch(e){} post("saveData",{json:String(json||"")}); },
+    openExactHtmlPdf:function(title,html){ post("openExactHtmlPdf",{title:title||"",html:html||""}); },
+    sendExactHtmlPdfEmail:function(title,html,text){ post("sendExactHtmlPdfEmail",{title:title||"",html:html||"",text:text||""}); },
+    printHtml:function(jobName,html){ post("openExactHtmlPdf",{title:jobName||"",html:html||""}); },
+    sharePdfHtml:function(title,html,text){ post("sendExactHtmlPdfEmail",{title:title||"",html:html||"",text:text||""}); },
+    printPage:function(jobName){ post("printPage",{title:jobName||""}); },
+    sharePdf:function(title,text){ post("shareText",{title:title||"",text:text||""}); },
+    shareText:function(title,text){ post("shareText",{title:title||"",text:text||""}); },
+    sendEmail:function(title,text){ post("shareText",{title:title||"",text:text||""}); },
+    saveBackup:function(json){ post("saveBackup",{json:String(json||"")}); }
+  };
+})();
+</script>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ESB Zählliste">
+<meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="ESB Zählliste"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>ESB Zählliste</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#64748b;--line:#dbe1e8;--yellow:#fbbf24;--green:#16a34a;--blue:#2563eb;--red:#dc2626;--purple:#7c3aed;--orange:#ea580c;--teal:#0f766e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{height:100%;overscroll-behavior:none}body{margin:0;min-height:100%;-webkit-text-size-adjust:100%;-webkit-touch-callout:none;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}input,select,textarea{font-size:16px}button{user-select:none;-webkit-user-select:none}button{border:0;border-radius:11px;font-weight:800;cursor:pointer;touch-action:manipulation}
+header{position:sticky;top:0;z-index:30;background:#111827;color:#fff;padding:9px 12px;box-shadow:0 2px 10px #0002}.head{max-width:1000px;margin:auto;display:flex;align-items:center;gap:10px}.headSpacer{flex:1}.projectsBtn{background:#fbbf24;color:#111827;padding:9px 12px;border-radius:10px;font-weight:900}
+.logo{height:48px;background:#fff;border-radius:7px;padding:3px}.head h1{font-size:18px;margin:0}.sub{font-size:11px;color:#d1d5db}
+main{max-width:1000px;margin:auto;padding:10px 12px 105px}.startPick{background:#fff;border:2px solid #bfdbfe;border-radius:16px;padding:11px;margin-bottom:9px;box-shadow:0 2px 8px #0000000a}.startPickTitle{font-size:13px;font-weight:900;color:#1e3a8a;margin-bottom:8px}.startGrid{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.startField label{display:block;font-size:11px;font-weight:900;color:#64748b;margin:0 0 4px 2px}.startField select{font-weight:900;border-color:#93c5fd}.startBtn{padding:11px 14px;background:#2563eb;color:#fff;white-space:nowrap}.mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}.mode button{padding:11px;background:#fff;border:1px solid var(--line)}.mode .active{background:#111827;color:#fff}
+.panel{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:9px}body.admin .panel{display:block}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff}.btn{padding:10px 12px;background:#fff;border:1px solid var(--line)}.primary{background:var(--yellow)}.blue{background:var(--blue);color:#fff}.danger{color:var(--red)}
+.brands{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}.brands button{padding:9px 4px;background:#fff;border:1px solid var(--line)}.brands .active{background:#111827;color:#fff}
+.room{display:grid;grid-template-columns:1fr auto;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:8px;margin-bottom:6px}.room select{font-weight:900;border-color:#93c5fd}.roomBtns{display:flex;gap:5px}.context{font-size:13px;color:#1e3a8a;font-weight:900;background:#dbeafe;padding:7px 9px;border-radius:10px;margin-bottom:8px}
+.search{margin-bottom:7px}.cats{display:flex;gap:7px;overflow:auto;padding-bottom:8px}.cats button{white-space:nowrap;padding:9px 12px;background:#fff;border:1px solid var(--line)}.cats .active{background:#111827;color:#fff}
+.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px;border-left:7px solid #64748b;padding:9px 10px;background:#fff;border-radius:10px;box-shadow:0 1px 3px #0001}.sectionTitle{font-size:17px;text-transform:uppercase;font-weight:950;color:#111827;letter-spacing:.02em}
+.sectionHead.schalter{border-color:var(--purple)}.sectionHead.rahmen,.sectionHead.wippen{border-color:var(--orange)}.sectionHead.auslaesse{border-color:var(--teal)}.sectionHead.verteiler{border-color:var(--red)}.sectionHead.beleuchtung{border-color:#eab308}.sectionHead.knx{border-color:var(--blue)}
+.addPos,.editPos{display:none}body.admin .addPos,body.admin .editPos{display:block}.addPos,.editPos{background:#e5e7eb;padding:6px 8px;font-size:12px}
+.items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.item{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;box-shadow:0 2px 5px #0000000a}.item.counted{border-color:var(--green);background:#f0fdf4}
+.nameRow{display:flex;justify-content:space-between;gap:6px}.name{font-weight:850;line-height:1.15}.controls{display:grid;grid-template-columns:44px 1fr 60px;gap:6px;align-items:center}.minus,.plus{height:54px;font-size:30px}.minus{background:#e5e7eb}.plus{background:var(--yellow)}.count{text-align:center;font-size:32px;font-weight:950;cursor:pointer;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:7px 4px;user-select:none}.counted .count{color:#15803d}
+.summary{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:16px}.summary h2{margin:0 0 8px}.sum{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:#111827;padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.bottom button{padding:13px 7px}.undo{background:#374151;color:#fff}.next{background:var(--blue);color:#fff}.order{background:var(--yellow)}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px;z-index:100}.modal.show{display:flex}.card{background:#fff;width:min(520px,100%);border-radius:16px;padding:14px}.card h3{margin:0 0 10px}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+@media(max-width:650px){.startGrid{grid-template-columns:1fr 1fr}.startBtn{grid-column:1/-1}.brands{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.logo{height:43px}}@media(max-width:360px){.items{grid-template-columns:1fr}}
+@media print{header,.mode,.panel,.room,.context,.search,.cats,.bottom,.editPos,.addPos{display:none!important}body{background:#fff}main{padding:0}.summary{border:0}#itemArea{display:none}#printHead{display:block!important;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:14px}}
+
+/* ESB LITE MODE */
+body:not(.admin) .panel{display:none!important}
+body:not(.admin) .adminOnly{display:none!important}
+body:not(.admin) .editPos,
+body:not(.admin) .addPos{display:none!important}
+body:not(.admin) .summary{margin-top:12px}
+body:not(.admin) .sectionHead{margin-top:12px}
+body:not(.admin) .items{gap:7px}
+body:not(.admin) .item{min-height:105px;padding:9px}
+body:not(.admin) .name{font-size:15px}
+body:not(.admin) .count{font-size:30px}
+body:not(.admin) .minus,
+body:not(.admin) .plus{height:50px}
+.startLite{
+  background:#fff;border:2px solid #2563eb;border-radius:16px;
+  padding:12px;margin-bottom:10px;box-shadow:0 2px 8px #0001
+}
+.startLite h2{margin:0 0 10px;font-size:20px}
+.liteStartBtn{width:100%;padding:13px;font-size:17px;background:#2563eb;color:#fff}
+.liteStatus{font-size:13px;font-weight:900;color:#1e3a8a;background:#dbeafe;padding:7px 9px;border-radius:10px;margin-bottom:8px}
+.mode{margin-bottom:8px}
+.mode button{font-size:14px;padding:9px}
+@media(max-width:650px){
+  .items{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+
+.apartmentDoneBar{display:flex;gap:8px;align-items:center;margin:8px 0 4px}
+.apartmentDoneBtn{width:100%;padding:11px;background:#fff;border:1px solid #cbd5e1}
+.apartmentDoneBtn.done{background:#dcfce7;color:#166534;border-color:#16a34a}
+.apartmentDoneHint{font-size:12px;color:#64748b;font-weight:800;margin-bottom:6px}
+
+
+.projectProgress{
+  margin:8px 0 10px;background:#fff;border:1px solid #cbd5e1;border-radius:12px;
+  padding:9px 10px;font-weight:900
+}
+.projectProgressBar{
+  height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:6px
+}
+.projectProgressFill{
+  height:100%;background:#16a34a;width:0%
+}
+
+
+.brandCountingBadge{
+  display:inline-flex;align-items:center;gap:6px;margin:6px 0 10px;
+  padding:7px 11px;border:2px solid #111;border-radius:10px;
+  background:#fff;font-size:14px;font-weight:950
+}
+
+
+.currentDateBadge{
+  display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;
+  padding:7px 11px;border:1px solid #cbd5e1;border-radius:10px;
+  background:#f8fafc;font-size:13px;font-weight:900;color:#334155
+}
+
+
+
+/* USER_SAMPLE_PDF_STYLE */
+@media print{
+  body *{visibility:hidden!important}
+  #printHead,#printHead *{visibility:visible!important}
+  #printHead{position:absolute;left:0;top:0;width:100%;padding:0!important;margin:0!important}
+  @page{size:A4;margin:12mm}
+  .pdfDoc{font-family:Arial,sans-serif;color:#171717}
+  .pdfPage{page-break-after:always;min-height:265mm}
+  .pdfPage:last-child{page-break-after:auto}
+  .pdfTitle{font-size:26px;text-align:center;margin:0 0 12px;font-weight:900}
+  .meta{font-size:12px;margin:3px 0}
+  .apTitle{font-size:22px;color:#1e3a8a;margin:18px 0 8px;font-weight:900}
+  .apCustomer{font-size:14px;margin-bottom:10px}
+  .roomTitle{font-size:17px;margin:13px 0 5px;font-weight:900}
+  .roomTable,.sumTable{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:12px}
+  .roomTable th,.roomTable td,.sumTable th,.sumTable td{border:1px solid #cfd2d8;padding:6px 7px}
+  .roomTable th,.sumTable th{background:#e5e7eb;text-align:left;font-weight:900}
+  .qty{text-align:right!important;font-weight:800}
+  .apSumTitle{font-size:17px;color:#166534;margin:16px 0 6px;font-weight:900}
+  .sumTable td{background:#dcfce7;border-color:#22a559}
+  .sumTable th{background:#e5e7eb;border-color:#22a559}
+  .totalTitle{font-size:25px;margin:0 0 8px;font-weight:900}
+  .totalSub{font-size:12px;margin-bottom:14px}
+}
+
+
+/* PDF_EXAKT_WIE_BEISPIEL */
+@media print{
+  @page{size:A4;margin:11mm}
+
+  html,body{
+    background:#fff!important;
+  }
+
+  body *{
+    visibility:hidden!important;
+  }
+
+  #printHead,#printHead *{
+    visibility:visible!important;
+  }
+
+  #printHead{
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  .pdfDocument{
+    font-family:Arial,Helvetica,sans-serif;
+    color:#111;
+    width:100%;
+  }
+
+  .pdfPage{
+    page-break-after:always;
+    min-height:270mm;
+    box-sizing:border-box;
+  }
+
+  .pdfPage:last-child{
+    page-break-after:auto;
+  }
+
+  .pdfTopTitle{
+    text-align:center;
+    font-size:24px;
+    font-weight:900;
+    margin:0 0 10px 0;
+  }
+
+  .pdfMeta{
+    font-size:11px;
+    margin:2px 0;
+  }
+
+  .pdfApartmentTitle{
+    color:#1e3a8a;
+    font-size:20px;
+    font-weight:900;
+    margin:14px 0 7px 0;
+  }
+
+  .pdfApartmentCustomer{
+    font-size:12px;
+    margin:0 0 8px 0;
+  }
+
+  .pdfRoomTitle{
+    font-size:15px;
+    font-weight:900;
+    margin:10px 0 4px 0;
+  }
+
+  .pdfRoomTable,
+  .pdfSumTable{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    margin:0 0 10px 0;
+    font-size:11px;
+  }
+
+  .pdfRoomTable th,
+  .pdfRoomTable td,
+  .pdfSumTable th,
+  .pdfSumTable td{
+    border:1px solid #c9cdd3;
+    padding:5px 7px;
+  }
+
+  .pdfRoomTable th,
+  .pdfSumTable th{
+    background:#e5e7eb;
+    text-align:left;
+    font-weight:900;
+  }
+
+  .pdfQty{
+    width:25%;
+    text-align:right!important;
+    font-weight:800;
+  }
+
+  .pdfApartmentSumTitle{
+    color:#166534;
+    font-size:15px;
+    font-weight:900;
+    margin:13px 0 5px 0;
+  }
+
+  .pdfSumTable td{
+    background:#dcfce7;
+    border-color:#38a169;
+  }
+
+  .pdfSumTable th{
+    background:#e5e7eb;
+    border-color:#38a169;
+  }
+
+  .pdfTotalTitle{
+    font-size:24px;
+    font-weight:900;
+    margin:0 0 5px 0;
+  }
+
+  .pdfTotalSub{
+    font-size:11px;
+    margin:0 0 12px 0;
+  }
+}
+
+
+body.esbPrinting #app,
+body.esbPrinting header,
+body.esbPrinting .topbar,
+body.esbPrinting .toolbar{
+  visibility:hidden!important;
+}
+body.esbPrinting #printHead,
+body.esbPrinting #printHead *{
+  visibility:visible!important;
+}
+
+</style></head><body>
+<header><div class="head"><img class="logo" src="icon-192.png"><div><h1>ESB Elektriker Zählliste</h1><div class="sub">Elektro Stampfl &amp; Brunner · iPad Web-App</div></div><div class="headSpacer"></div><button class="projectsBtn" onclick="openProjects()">Projekte</button></div></header>
+<main>
+<div class="card startLite" id="startSelection">
+  <div style="font-size:20px;font-weight:950;margin-bottom:10px">Kunde & Raum</div>
+  <label style="font-weight:900">Kunde / Projekt</label>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:7px;margin:5px 0 12px">
+    <select id="startCustomer" onchange="startCustomerChanged()"></select>
+    <button class="btn" onclick="editCustomer()" style="white-space:nowrap">✏️ Kunde bearbeiten</button>
+  </div>
+  <label style="font-weight:900">Wohnung</label>
+  <select id="startApartment" onchange="startApartmentChanged()" style="margin:5px 0 8px"></select>
+  <label style="font-weight:900">Name Kunde / Bewohner dieser Wohnung</label>
+  <input id="apartmentCustomerName" type="text" placeholder="z. B. Müller" oninput="saveApartmentCustomerName()" style="margin:5px 0 12px">
+  <label style="font-weight:900">Raum</label>
+  <select id="startRoom" onchange="startRoomChanged()" style="margin:5px 0 12px"></select>
+  <button class="btn primary liteStartBtn" onclick="startCounting()">Zählen starten</button>
+<div style="margin:8px 0"><button class="btn danger" style="width:100%" onclick="deleteCurrentApartment()">Wohnung löschen</button></div>
+<div class="apartmentDoneBar">
+  <button id="apartmentDoneBtn" class="apartmentDoneBtn" onclick="toggleApartmentDone()">Wohnung fertig ✓</button>
+</div>
+<div class="apartmentDoneHint">Grün = Wohnung abgeschlossen</div>
+</div>
+
+<div class="mode" id="counterStart"><button id="mCount" onclick="setMode('count')">⚡ Zählen</button><button id="mAdmin" onclick="setMode('admin')">⚙️ Verwalten</button></div>
+<div class="panel">
+ <div class="row"><select id="customerSel" onchange="switchCustomer(this.value)"></select><button class="btn primary" onclick="newCustomer()">+ Kunde</button></div>
+ <div class="g2"><button class="btn" onclick="editCustomer()">Kunde bearbeiten</button><button class="btn danger" onclick="deleteCustomer()">Kunde löschen</button></div>
+ <div class="brands" id="brands"></div>
+ <div class="g2"><button class="btn" onclick="newCategory()">+ Kategorie</button><button class="btn" onclick="backup()">💾 Sicherung</button></div>
+ <div class="g2" style="margin-top:8px"><button class="btn" onclick="restore()">📂 Wiederherstellen</button><button class="btn" onclick="resetCustomer()">Zählwerte auf 0</button></div><div id="storageInfo" style="font-size:12px;color:#64748b;font-weight:800;margin-top:8px"></div>
+</div>
+<div class="room"><select id="roomSel" onchange="switchRoom(this.value)"></select><div class="roomBtns"><button class="btn blue adminOnly" onclick="newRoom()">+ Raum</button><button class="btn adminOnly" onclick="editRoom()">✏️</button><button class="btn danger adminOnly" onclick="deleteRoom()">🗑️</button></div></div>
+<div class="context" id="context"></div><div id="countingBrandBadge" class="brandCountingBadge">Schalterprogramm: –</div><div id="currentDateBadge" class="currentDateBadge">Datum: –</div>
+<div class="projectProgress">
+  <div id="projectProgressText">0/0 Wohnungen fertig</div>
+  <div class="projectProgressBar"><div id="projectProgressFill" class="projectProgressFill"></div></div>
+</div>
+<div style="margin:0 0 10px">
+  <button id="projectDoneBtn" class="btn" style="width:100%;font-weight:900" onclick="finishCurrentProject()">✓ Projekt fertig / archivieren</button>
+</div>
+
+<div class="search" style="display:grid;grid-template-columns:1fr auto;gap:7px">
+      <input id="search" placeholder="🔎 Suchen..." oninput="autoJumpCategoryFromSearch()">
+      <button class="btn" type="button" onclick="clearSearch()">✕</button>
+    </div><div class="cats" id="cats"></div>
+<div class="adminOnly" style="font-size:12px;font-weight:850;color:#475569;margin:5px 0 10px">Reihenfolge ändern: ↑ oder ↓ bei der Position.</div><div id="itemArea"></div>
+<div class="summary"><div id="printHead" style="display:none"></div><h2>Bestellliste gesamt</h2><div id="summary"></div><div class="g3" style="margin-top:10px"><button class="btn" onclick="copyList()">Kopieren</button><button class="btn" onclick="printList()">📄 Bestellliste / PDF öffnen</button><button class="btn" onclick="shareList()">✉️ PDF per E-Mail / Teilen</button></div></div>
+</main>
+<div class="bottom"><button class="undo" onclick="undo()">↶ Rückgängig</button><button class="next" onclick="nextRoom()">Nächster Raum →</button><button class="order" onclick="printList()">Bestellliste</button></div>
+<div class="modal" id="modal"><div class="card"><h3 id="modalTitle"></h3><div id="modalBody"></div><div class="actions"><button class="btn" onclick="closeModal()">Abbrechen</button><button class="btn primary" id="saveBtn">Speichern</button></div></div></div>
+<script>
+const KEY="esb_app_final_v1",brands=["Bticino","Berker","Gira","Jung","Vimar"];
+const frameMap={Bticino:["503 Rahmen","504 Rahmen","507 Rahmen"],Vimar:["503 Rahmen","504 Rahmen","507 Rahmen"],Berker:["1-fach Rahmen","2-fach Rahmen","3-fach Rahmen","4-fach Rahmen","5-fach Rahmen","1-fach Rahmen senkrecht","2-fach Rahmen senkrecht","3-fach Rahmen senkrecht","4-fach Rahmen senkrecht","5-fach Rahmen senkrecht"],Gira:["1-fach Rahmen","2-fach Rahmen","3-fach Rahmen","4-fach Rahmen","5-fach Rahmen","1-fach Rahmen senkrecht","2-fach Rahmen senkrecht","3-fach Rahmen senkrecht","4-fach Rahmen senkrecht","5-fach Rahmen senkrecht"],Jung:["1-fach Rahmen","2-fach Rahmen","3-fach Rahmen","4-fach Rahmen","5-fach Rahmen","1-fach Rahmen senkrecht","2-fach Rahmen senkrecht","3-fach Rahmen senkrecht","4-fach Rahmen senkrecht","5-fach Rahmen senkrecht"]};
+const base=[
+["Schalter & Steckdosen",["Schukosteckdose","Wechselschalter","Kreuzschalter","Serienschalter","Doppelwechselschalter","Rolloschalter","Rollotaster","Taster normal","Thermostate","Hauptthermostat","CAT6 Steckdosen","TV Steckdose","Zentral UAE 1-fach","Zentral UAE 2-fach","TV zentral","Blindabdeckung","USB Steckdose","Kabelauslass"]],
+["Rahmen",[]],
+["Wippen",["1-fach Wippen","Serienwippe","Jalousiewippe","Wippe mit Schriftfeld"]],
+["Auslässe",["LED Auslass","Lichtauslass","Auslass Markise","Auslass Abzugshaube","Auslass Kochinsel","Auslass Ventilator","Auslass Lüftung","Auslass Klimagerät","Auslass Alarmkontakt","Auslass Bedienteil Alarm","Auslass Außensirene Alarm","Auslass Bewegungsmelder Alarm","Auslass Zentrale Alarm","Auslass Kamera","Außenfühler","Auslass Innensirene Alarm","Auslass Schacht Garten","Leerrohrauslass"]],
+["Verteiler",["LS 10 A", "LS 16 A", "FI 40 A / 30 mA", "FI/LS 10 A", "FI/LS 16 A", "Hauptschalter", "Überspannungsschutz", "Klingeltrafo", "Schütz", "Stromstoßschalter", "Astrouhr", "Uhr", "Striebel & John 3 Reihig", "Striebel & John 4 Reihig", "Striebel & John Multimediaverteiler","LS 10 A 4 pol","LS 16 A 4 pol","FI Schutzschalter 40 A 4 pol","FI Schutzschalter 40 A 2 pol","Kippschalter 40 A 2 pol","Kippschalter 40 A 4 pol"]],
+["KNX – Verteilung",["Spannungsversorgung","Gira X1","Gira S1","Spannungsversorgung Wetterstation",
+        "Wetterstation","Heizungsaktor","Schaltaktor 8-fach","Schaltaktor 24-fach","Jalousieaktor","Dimmaktor","Binäreingang 24 V","Binäreingang 230 V","DALI Gateway"]],
+["KNX – Schaltung",["Tastsensor 1-fach","Tastsensor 2-fach","Tastsensor 3-fach","Tastsensor 4-fach","BA Taster 1-fach","BA Taster 2-fach","Thermostat Bus","Gira G1"]],["Beleuchtung",["Brilux Einbaustrahler","LED Strip","LED Schiene + Abdeckung Brilux U1","Kaiser Halox Dose"]],["Sonstiges",["Videosprechanlage","Notlampe Wand","Unterputznotlampe","Abzweigdose PT 3","Abzweigdose PT 4","Abzweigdose PT 5","Abzweigdose PT 6","Abzweigdose PT 7","Abzweigdose PT 8","Abzweigdose PT 9","Abzweigdose PT 10","Abzweigdose PT 11","Bewegungsmelder 360 ° unterputz","Bewegungsmelder 1,10 Mt unterputz","Verteilung TV"]]
+];
+const uid=()=>crypto.randomUUID?crypto.randomUUID():"id"+Date.now()+Math.random();
+function groups(brand){return base.map(([title,names])=>({title,items:(title==="Rahmen"?frameMap[brand]:names).map(name=>({name,count:0}))}))}
+function mkRoom(name,brand){return{id:uid(),name,groups:groups(brand)}}
+let storedRaw=null;
+try{
+ if(typeof window!=="undefined" && window.AndroidApp && typeof window.AndroidApp.loadData==="function") storedRaw=AndroidApp.loadData();
+ if(!storedRaw) storedRaw=localStorage.getItem(KEY);
+}catch(e){}
+let data=null;
+try{data=storedRaw?JSON.parse(storedRaw):null}catch(e){data=null}
+if(!data){
+ const r=mkRoom("Allgemein","Gira");
+ data={current:"c1",customers:[{id:"c1",name:"Kunde 1",project:"",address:"",date:"",note:"",brand:"Gira",room:r.id,rooms:[r],projectDone:false,startPlaceholder:false}]};
+}
+let mode="count",cat="Alle",last=null;
+chooseProjectForStart();
+save();
+
+const mCount=document.getElementById("mCount"),mAdmin=document.getElementById("mAdmin"),customerSel=document.getElementById("customerSel"),roomSel=document.getElementById("roomSel"),context=document.getElementById("context"),cats=document.getElementById("cats"),search=document.getElementById("search"),itemArea=document.getElementById("itemArea"),printHead=document.getElementById("printHead"),summary=document.getElementById("summary"),modalTitle=document.getElementById("modalTitle"),modalBody=document.getElementById("modalBody"),saveBtn=document.getElementById("saveBtn");
+function persistableData(){return JSON.parse(JSON.stringify(data))}
+function save(){
+ const raw=JSON.stringify(persistableData());
+ try{localStorage.setItem(KEY,raw)}catch(e){}
+ try{
+   if(typeof window!=="undefined" && window.AndroidApp && typeof window.AndroidApp.saveData==="function")AndroidApp.saveData(raw);
+ }catch(e){}
+}
+const C=()=>data.customers.find(x=>x.id===data.current)||null,R=()=>{const c=C();return c?(c.rooms.find(x=>x.id===c.room)||c.rooms[0]||null):null},esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function modal(title,body,fn){modalTitle.textContent=title;modalBody.innerHTML=body;saveBtn.onclick=fn;document.getElementById("modal").classList.add("show")}function closeModal(){document.getElementById("modal").classList.remove("show")}
+
+function storageInfoText(){
+ const projects=(data.customers||[]).length;
+ const rooms=(data.customers||[]).reduce((s,c)=>s+(c.rooms||[]).length,0);
+ return `${projects} Projekt${projects===1?"":"e"} · ${rooms} Wohnung/Raum-Einträge gespeichert`;
+}
+
+function setMode(x){mode=x;localStorage.setItem("esb_mode",x);render()}
+
+
+
+
+
+
+
+const roomPresets=['Allgemein','Gang','Küche','Elternzimmer','Kinderzimmer 1','Kinderzimmer 2','Kinderzimmer 3','Tages WC','Bad','Abstellraum','Wohnküche','Balkon','Terrasse','Wohnzimmer','Schlafzimmer','Büro','Technikraum','Keller','Garage','Vorraum','Speis','Waschraum','Stiegenhaus','Außenbereich'];
+
+
+const apartmentPresets=['Allgemein','Wohnung 1','Wohnung 2','Wohnung 3','Wohnung 4','Wohnung 5','Wohnung 6','Wohnung 7','Wohnung 8','Wohnung 9','Wohnung 10','Wohnung 11','Wohnung 12','Wohnung 13','Wohnung 14','Wohnung 15','Wohnung 16','Wohnung 17','Wohnung 18','Wohnung 19','Wohnung 20','Wohnung 21','Wohnung 22','Wohnung 23','Wohnung 24','Wohnung 25','Wohnung 26','Wohnung 27','Wohnung 28','Wohnung 29','Wohnung 30','Wohnung 31','Wohnung 32','Wohnung 33','Wohnung 34','Wohnung 35','Wohnung 36','Wohnung 37','Wohnung 38','Wohnung 39','Wohnung 40','Wohnung 41','Wohnung 42','Wohnung 43','Wohnung 44','Wohnung 45','Wohnung 46','Wohnung 47','Wohnung 48','Wohnung 49','Wohnung 50','Wohnung 51','Wohnung 52','Wohnung 53','Wohnung 54','Wohnung 55','Wohnung 56','Wohnung 57','Wohnung 58','Wohnung 59','Wohnung 60','Wohnung 61','Wohnung 62','Wohnung 63','Wohnung 64','Wohnung 65','Wohnung 66','Wohnung 67','Wohnung 68','Wohnung 69','Wohnung 70','Wohnung 71','Wohnung 72','Wohnung 73','Wohnung 74','Wohnung 75','Wohnung 76','Wohnung 77','Wohnung 78','Wohnung 79','Wohnung 80','Wohnung 81','Wohnung 82','Wohnung 83','Wohnung 84','Wohnung 85','Wohnung 86','Wohnung 87','Wohnung 88','Wohnung 89','Wohnung 90','Wohnung 91','Wohnung 92','Wohnung 93','Wohnung 94','Wohnung 95','Wohnung 96','Wohnung 97','Wohnung 98','Wohnung 99','Wohnung 100'];
+
+function migrateApartmentsV4(){
+ data.customers.forEach(c=>{
+   (c.rooms||[]).forEach(r=>{if(!r.apartment)r.apartment="Allgemein";});
+ });
+ save();
+}
+migrateApartmentsV4();
+
+function currentApartment(){
+ const el=document.getElementById("startApartment");
+ return el&&el.value ? el.value : ((R()&&R().apartment)||"Allgemein");
+}
+
+
+function apartmentCustomerName(apartment){
+ const c=C();
+ if(!c.apartmentCustomers)c.apartmentCustomers={};
+ return c.apartmentCustomers[apartment]||"";
+}
+function saveApartmentCustomerName(){
+ const el=document.getElementById("apartmentCustomerName");
+ const ap=document.getElementById("startApartment");
+ if(!el||!ap)return;
+ const c=C();
+ if(!c.apartmentCustomers)c.apartmentCustomers={};
+ c.apartmentCustomers[ap.value]=el.value;
+ if(String(el.value||"").trim())c.startPlaceholder=false;
+ save();
+}
+function renderApartmentCustomerName(){
+ const el=document.getElementById("apartmentCustomerName");
+ const ap=document.getElementById("startApartment");
+ if(!el||!ap)return;
+ el.value=apartmentCustomerName(ap.value);
+}
+
+function startApartmentChanged(){
+ const ap=document.getElementById("startApartment");
+ if(!ap)return;
+ const c=C(),wanted=ap.value;
+
+ let candidate=(c.rooms||[]).find(r=>(r.apartment||"Allgemein")===wanted);
+ if(!candidate){
+   candidate=mkRoom("Allgemein",c.brand);
+   candidate.apartment=wanted;
+   c.rooms.push(candidate);
+ }
+
+ c.room=candidate.id;
+ cat="Alle";
+ save();
+ render();
+}
+
+function ensureApartmentRoom(apartment,value){
+ const c=C();
+ if(value&&value.startsWith("__preset__")){
+   const name=value.replace("__preset__","");
+   let r=(c.rooms||[]).find(x=>(x.apartment||"Allgemein")===apartment&&x.name===name);
+   if(!r){r=mkRoom(name,c.brand);r.apartment=apartment;c.rooms.push(r);}
+   return r.id;
+ }
+ const existing=(c.rooms||[]).find(x=>x.id===value);
+ if(existing){existing.apartment=existing.apartment||apartment||"Allgemein";return existing.id;}
+ return value;
+}
+
+function refreshStartSelectors(){
+ const customerEl=document.getElementById("startCustomer");
+ const apartmentEl=document.getElementById("startApartment");
+ const roomEl=document.getElementById("startRoom");
+ if(!customerEl||!roomEl)return;
+
+ const c=C();
+ if(!c){
+   customerEl.innerHTML='<option value="">Kein Projekt ausgewählt</option>';
+   customerEl.disabled=false;
+   if(apartmentEl){apartmentEl.innerHTML='<option value="">–</option>';apartmentEl.disabled=true;}
+   roomEl.innerHTML='<option value="">–</option>';
+   roomEl.disabled=true;
+   const ac=document.getElementById("apartmentCustomerName");
+   if(ac){ac.value="";ac.disabled=true;}
+   return;
+ }
+
+ customerEl.disabled=false;
+ if(apartmentEl)apartmentEl.disabled=false;
+ roomEl.disabled=false;
+ const ac=document.getElementById("apartmentCustomerName");
+ if(ac)ac.disabled=false;
+
+ const active=R(),activeApartment=(active&&active.apartment)||"Allgemein";
+ customerEl.innerHTML="";
+ const empty=document.createElement("option");
+ empty.value="";empty.textContent="Projekt wechseln …";
+ customerEl.appendChild(empty);
+
+ data.customers.filter(x=>!isBlankStartProject(x)).forEach(x=>{
+   const o=document.createElement("option");
+   o.value=x.id;
+   o.textContent=x.name+(x.project?" – "+x.project:"")+(x.projectDone?" ✓":"");
+   o.selected=x.id===data.current;
+   customerEl.appendChild(o);
+ });
+
+ if(apartmentEl){
+   apartmentEl.innerHTML="";
+   apartmentPresets.forEach(name=>{
+     const o=document.createElement("option");
+     o.value=name;
+     o.textContent=name+((c.apartmentDone&&c.apartmentDone[name])?" ✓":"");
+     o.selected=name===activeApartment;
+     apartmentEl.appendChild(o);
+   });
+ }
+
+ roomEl.innerHTML="";
+ roomPresets.forEach(name=>{
+   const existing=(c.rooms||[]).find(r=>(r.apartment||"Allgemein")===activeApartment&&r.name===name);
+   const o=document.createElement("option");
+   o.value=existing?existing.id:"__preset__"+name;
+   o.textContent=name;
+   if(existing&&active&&existing.id===active.id)o.selected=true;
+   roomEl.appendChild(o);
+ });
+
+ (c.rooms||[]).forEach(r=>{
+   if((r.apartment||"Allgemein")!==activeApartment||roomPresets.includes(r.name))return;
+   const o=document.createElement("option");
+   o.value=r.id;o.textContent=r.name;o.selected=active&&r.id===active.id;
+   roomEl.appendChild(o);
+ });
+
+ renderApartmentCustomerName();
+}
+
+function startCustomerChanged(){
+ const el=document.getElementById("startCustomer");
+ if(!el||!el.value)return;
+ selectProject(el.value);
+}
+
+function ensurePresetRoom(value){
+ if(!value||!value.startsWith("__preset__"))return value;
+ const name=value.replace("__preset__","");
+ const c=C();
+ let r=c.rooms.find(x=>x.name===name);
+ if(!r){
+   r=mkRoom(name,c.brand);
+   c.rooms.push(r);
+ }
+ return r.id;
+}
+
+function startRoomChanged(){
+ const el=document.getElementById("startRoom"),apEl=document.getElementById("startApartment");
+ if(!el||!el.value)return;
+ const apartment=apEl&&apEl.value?apEl.value:"Allgemein";
+ C().room=ensureApartmentRoom(apartment,el.value);
+ cat="Alle";save();render();refreshStartSelectors();
+}
+
+function startCounting(){
+ const c=C(); if(c.startPlaceholder){c.startPlaceholder=false;save();}
+
+ const roomEl=document.getElementById("startRoom"),apEl=document.getElementById("startApartment");
+ const apartment=apEl&&apEl.value?apEl.value:"Allgemein";
+ if(roomEl&&roomEl.value)C().room=ensureApartmentRoom(apartment,roomEl.value);
+ save();render();
+ const target=document.getElementById("cats");
+ if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+
+function formatCount(item){
+ const v=Number(item.count||0);
+ if(unitForItem(item.name)==="m") return String(Math.round(v*100)/100).replace(".",",");
+ return String(Math.round(v));
+}
+
+function unitForItem(name){
+ const n=String(name).trim().toLowerCase();
+ return (n==="led strip" || n==="led schiene + abdeckung brilux u1") ? "m" : "Stk.";
+}
+
+
+function migrateApartmentDoneV7(){
+ data.customers.forEach(c=>{
+   if(!c.apartmentDone || typeof c.apartmentDone!=="object")c.apartmentDone={};
+ });
+ save();
+}
+migrateApartmentDoneV7();
+
+function activeApartmentName(){
+ const el=document.getElementById("startApartment");
+ return el&&el.value ? el.value : ((R()&&R().apartment)||"Allgemein");
+}
+
+function toggleApartmentDone(){
+ const c=C(),ap=activeApartmentName();
+ if(!c.apartmentDone)c.apartmentDone={};
+ c.apartmentDone[ap]=!c.apartmentDone[ap];
+ save();
+ render();
+ refreshStartSelectors();
+}
+
+function renderApartmentDone(){
+ const btn=document.getElementById("apartmentDoneBtn");
+ if(!btn)return;
+ const c=C(),ap=activeApartmentName();
+ const done=!!(c.apartmentDone&&c.apartmentDone[ap]);
+ btn.classList.toggle("done",done);
+ btn.textContent=done ? "✓ Wohnung fertig" : "Wohnung fertig ✓";
+}
+
+
+function projectProgressData(){
+ const c=C();
+ const apartmentNames=[...new Set((c.rooms||[]).map(r=>r.apartment||"Allgemein"))]
+   .filter(name=>name!=="Allgemein" || (c.rooms||[]).some(r=>(r.apartment||"Allgemein")==="Allgemein"));
+ const total=apartmentNames.length;
+ const done=apartmentNames.filter(name=>c.apartmentDone&&c.apartmentDone[name]).length;
+ return {done,total};
+}
+
+function renderProjectProgress(){
+ const textEl=document.getElementById("projectProgressText");
+ const fillEl=document.getElementById("projectProgressFill");
+ if(!textEl||!fillEl)return;
+ const p=projectProgressData();
+ textEl.textContent=`${p.done}/${p.total} Wohnungen fertig`;
+ const pct=p.total?Math.round((p.done/p.total)*100):0;
+ fillEl.style.width=pct+"%";
+}
+
+
+function renderCountingBrand(){
+ const el=document.getElementById("countingBrandBadge");
+ if(!el)return;
+ const c=C();
+ el.textContent="Schalterprogramm: "+(c.brand||"–");
+}
+
+
+function currentDateDE(){
+ const d=new Date();
+ return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+}
+function currentDateISO(){
+ const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+ return `${y}-${m}-${day}`;
+}
+function renderCurrentDate(){
+ const el=document.getElementById("currentDateBadge");
+ if(el)el.textContent="Datum: "+currentDateDE();
+}
+
+
+function renderProjectDone(){
+ const btn=document.getElementById("projectDoneBtn");
+ if(!btn)return;
+ const c=C();
+ if(c.projectDone){
+   btn.textContent="✓ Projekt ist fertig / archiviert";
+   btn.style.background="#dcfce7";
+   btn.style.color="#166534";
+   btn.onclick=()=>reopenFinishedProject(c.id);
+ }else{
+   btn.textContent="✓ Projekt fertig / archivieren";
+   btn.style.background="";
+   btn.style.color="";
+   btn.onclick=finishCurrentProject;
+ }
+}
+
+
+function hasActiveProject(){return !!C();}
+
+function renderNeutralStart(){
+ const startCustomer=document.getElementById("startCustomer");
+ const startApartment=document.getElementById("startApartment");
+ const startRoom=document.getElementById("startRoom");
+ const apartmentCustomer=document.getElementById("apartmentCustomerName");
+
+ if(startCustomer){
+   startCustomer.innerHTML='<option value="">Kein Projekt ausgewählt</option>';
+   startCustomer.disabled=false;
+ }
+ if(startApartment){
+   startApartment.innerHTML='<option value="">–</option>';
+   startApartment.disabled=true;
+ }
+ if(startRoom){
+   startRoom.innerHTML='<option value="">–</option>';
+   startRoom.disabled=true;
+ }
+ if(apartmentCustomer){
+   apartmentCustomer.value="";
+   apartmentCustomer.disabled=true;
+ }
+
+ document.querySelectorAll('button[onclick="editCustomer()"]').forEach(b=>b.disabled=true);
+ const delAp=document.querySelector('button[onclick="deleteCurrentApartment()"]');
+ if(delAp)delAp.disabled=true;
+ const apDone=document.getElementById("apartmentDoneBtn");
+ if(apDone)apDone.disabled=true;
+ const projectDone=document.getElementById("projectDoneBtn");
+ if(projectDone)projectDone.disabled=true;
+
+ const contextEl=document.getElementById("context");
+ if(contextEl)contextEl.textContent='Kein Projekt ausgewählt – bitte auf „Projekte“ tippen oder ein neues Projekt anlegen.';
+
+ const item=document.getElementById("itemArea");
+ if(item)item.innerHTML='<div style="padding:22px;text-align:center;color:#64748b;font-weight:900">Kein Projekt ausgewählt.</div>';
+
+ const summaryEl=document.getElementById("summary");
+ if(summaryEl)summaryEl.innerHTML="";
+}
+
+function render(){
+ setTimeout(renderCurrentDate,0);
+ document.body.classList.toggle("admin",mode==="admin");
+ mCount.classList.toggle("active",mode==="count");
+ mAdmin.classList.toggle("active",mode==="admin");
+ document.querySelectorAll(".adminOnly").forEach(x=>x.style.display=mode==="admin"?"":"none");
+
+ const si=document.getElementById("storageInfo");
+ if(si)si.textContent=storageInfoText();
+
+ renderCustomers();
+ renderRooms();
+
+ if(!hasActiveProject()){
+   renderNeutralStart();
+   setTimeout(refreshStartSelectors,0);
+   return;
+ }
+
+ document.querySelectorAll('button[onclick="editCustomer()"]').forEach(b=>b.disabled=false);
+ const delAp=document.querySelector('button[onclick="deleteCurrentApartment()"]');
+ if(delAp)delAp.disabled=false;
+ const apDone=document.getElementById("apartmentDoneBtn");
+ if(apDone)apDone.disabled=false;
+ const projectDone=document.getElementById("projectDoneBtn");
+ if(projectDone)projectDone.disabled=false;
+
+ setTimeout(renderCountingBrand,0);
+ setTimeout(renderProjectProgress,0);
+ setTimeout(renderApartmentDone,0);
+ setTimeout(renderProjectDone,0);
+ setTimeout(refreshStartSelectors,0);
+
+ renderBrands();
+ renderCats();
+ renderItems();
+ renderSummary();
+
+ const c=C(),r=R();
+ if(c&&r){
+   const i=c.rooms.findIndex(x=>x.id===r.id)+1;
+   context.textContent=`${c.name}  •  ${r.name}  •  ${c.brand}  •  Raum ${i}/${c.rooms.length}`;
+ }
+}
+function renderCustomers(){
+ const adminSel=document.getElementById("customerSel");
+ if(!adminSel)return;
+ adminSel.innerHTML="";
+
+ const visible=data.customers.filter(c=>!isBlankStartProject(c));
+ const empty=document.createElement("option");
+ empty.value="";
+ empty.textContent=visible.length?"Projekt auswählen …":"Keine gespeicherten Projekte";
+ empty.selected=!data.current;
+ adminSel.appendChild(empty);
+
+ visible.forEach(c=>{
+   const o=document.createElement("option");
+   o.value=c.id;
+   o.textContent=(c.project?`${c.name} – ${c.project}`:c.name)+(c.projectDone?" ✓":"");
+   o.selected=c.id===data.current;
+   adminSel.appendChild(o);
+ });
+}
+function renderRooms(){
+ const adminSel=document.getElementById("roomSel");
+ if(!adminSel)return;
+ adminSel.innerHTML="";
+ const c=C();
+ if(!c){
+   const o=document.createElement("option");o.value="";o.textContent="–";adminSel.appendChild(o);
+   adminSel.disabled=true;
+   return;
+ }
+ adminSel.disabled=false;
+ (c.rooms||[]).forEach(r=>{
+   const o=document.createElement("option");
+   o.value=r.id;
+   o.textContent=(r.apartment&&r.apartment!=="Allgemein"?r.apartment+" – ":"")+r.name;
+   o.selected=r.id===c.room;
+   adminSel.appendChild(o);
+ });
+}
+function renderBrands(){document.getElementById("brands").innerHTML=brands.map(b=>`<button class="${b===C().brand?"active":""}" onclick="setBrand('${b}')">${b}</button>`).join("")}
+function renderCats(){document.getElementById("cats").innerHTML=["Alle",...R().groups.map(g=>g.title)].map(x=>`<button class="${x===cat?"active":""}" onclick='cat=${JSON.stringify(x)};renderCats();renderItems()'>${esc(x)}</button>`).join("")}
+function scrollToCounter(){document.getElementById("counterStart").scrollIntoView({behavior:"smooth",block:"start"})}
+
+function autoJumpCategoryFromSearch(){
+ const input=document.getElementById("search");
+ if(!input)return;
+ const q=input.value.trim();
+ if(!q){
+   cat="Alle";
+   renderCats();
+   renderItems();
+   return;
+ }
+
+ const groups=R().groups||[];
+ const direct=groups.find(g=>searchMatches(q,g.title));
+ if(direct){
+   cat=direct.title;
+   renderCats();
+   renderItems();
+
+   setTimeout(()=>{
+     const heads=[...document.querySelectorAll(".sectionHead")];
+     const target=heads.find(h=>normalizeSearch(h.textContent).includes(normalizeSearch(direct.title)));
+     if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+   },50);
+ }else{
+   cat="Alle";
+   renderCats();
+   renderItems();
+ }
+}
+
+function clearSearch(){
+ const el=document.getElementById("search");
+ if(el){el.value="";cat="Alle";renderCats();renderItems();el.focus();}
+}
+
+function normalizeSearch(s){
+ return String(s||"")
+   .toLowerCase()
+   .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+   .replace(/ß/g,"ss")
+   .replace(/[^a-z0-9 ]/g,"")
+   .replace(/\s+/g," ")
+   .trim();
+}
+function editDistance(a,b){
+ a=normalizeSearch(a);b=normalizeSearch(b);
+ const m=a.length,n=b.length,dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
+ for(let i=0;i<=m;i++)dp[i][0]=i;
+ for(let j=0;j<=n;j++)dp[0][j]=j;
+ for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+   dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+ return dp[m][n];
+}
+function searchMatches(query,text){
+ const q=normalizeSearch(query),t=normalizeSearch(text);
+ if(!q)return true;
+ if(t.includes(q)||q.includes(t))return true;
+ return q.length>=4&&editDistance(q,t)<=2;
+}
+
+
+function renderItems(){const searchEl=document.getElementById("search");const q=(searchEl?searchEl.value:"").trim();document.getElementById("itemArea").innerHTML="";R().groups.forEach((g,gi)=>{if(cat!=="Alle"&&cat!==g.title)return;const categoryMatch=searchMatches(q,g.title);const a=g.items.map((item,ii)=>({item,ii})).filter(x=>!q||categoryMatch||searchMatches(q,x.item.name));if(!a.length)return;const h=document.createElement("div"),t=g.title.toLowerCase();h.className="sectionHead "+(t.includes("schalter")?"schalter":t.includes("rahmen")?"rahmen":t.includes("wippen")?"wippen":t.includes("ausl")?"auslaesse":t.includes("beleuchtung")?"beleuchtung":t.includes("knx")?"knx":t.includes("verteiler")?"verteiler":"");h.innerHTML=`<div class="sectionTitle">${esc(g.title)}</div><div style="display:flex;gap:5px"><button class="addPos" onclick="newPosition(${gi})">+ Position</button><button class="addPos" onclick="editCategory(${gi})">✏️</button><button class="addPos" onclick="deleteCategory(${gi})">🗑️</button></div>`;document.getElementById("itemArea").appendChild(h);const grid=document.createElement("div");grid.className="items";a.forEach(({item,ii})=>{const e=document.createElement("div");e.className="item"+(item.count>0?" counted":"");e.innerHTML=`<div class="nameRow"><div class="name">${esc(item.name)}</div><div style="display:flex;gap:4px"><button class="editPos" onclick="movePositionUp(${gi},${ii})">↑</button><button class="editPos" onclick="movePositionDown(${gi},${ii})">↓</button><button class="editPos" onclick="editPosition(${gi},${ii})">✏️</button></div></div><div class="controls"><button class="minus" onclick="change(${gi},${ii},-1)">−</button><div class="count" title="Zahl direkt eingeben" onclick="setCountDirect(${gi},${ii})">${formatCount(item)} <span style="font-size:14px;font-weight:800;color:#64748b">${unitForItem(item.name)}</span></div><button class="plus" onclick="change(${gi},${ii},1)">+</button></div>`;grid.appendChild(e)});document.getElementById("itemArea").appendChild(grid)})}
+
+function setCountDirect(gi,ii){
+ const __pc=C(); if(__pc.startPlaceholder)__pc.startPlaceholder=false;
+
+ const item=R().groups[gi].items[ii];
+ modal("Menge direkt eingeben",`
+   <div style="font-weight:800;margin-bottom:7px">${esc(item.name)}</div>
+   <input id="xDirectCount" type="text" inputmode="${unitForItem(item.name)==="m"?"decimal":"numeric"}" value="${String(item.count).replace(".",",")}" style="font-size:24px;font-weight:900;text-align:center">
+   <div style="font-size:12px;color:#64748b;margin-top:7px">Gewünschte Menge eingeben (${unitForItem(item.name)}) und Speichern drücken.</div>
+ `,()=>{
+   const el=document.getElementById("xDirectCount");
+   let raw=String(el.value||"").trim().replace(",",".");
+   let val=parseFloat(raw);
+   if(Number.isNaN(val)||val<0)val=0;
+   // Meter positions allow decimals; piece positions remain whole numbers.
+   item.count=unitForItem(item.name)==="m" ? Math.round(val*100)/100 : Math.round(val);
+   save();
+   closeModal();
+   render();
+ });
+ setTimeout(()=>{
+   const el=document.getElementById("xDirectCount");
+   if(el){el.focus();el.select();}
+ },50);
+}
+
+function change(gi,ii,d){
+ const __pc=C(); if(__pc.startPlaceholder)__pc.startPlaceholder=false;
+const c=C(),r=R(),i=r.groups[gi].items[ii],old=i.count;i.count=Math.max(0,i.count+d);last={cid:c.id,rid:r.id,gi,ii,old};if(d>0&&navigator.vibrate)navigator.vibrate(25);save();render()}
+function undo(){
+ if(!last)return;
+ const c=data.customers.find(x=>x.id===last.cid);
+ const r=c&&c.rooms.find(x=>x.id===last.rid);
+ const i=r&&r.groups[last.gi]&&r.groups[last.gi].items[last.ii];
+ if(!i)return;
+ i.count=last.old;
+ last=null;
+ save();
+ render();
+}
+function switchCustomer(id){
+ if(!id){data.current="";save();render();return;}
+ data.current=id;
+ cat="Alle";
+ const s=document.getElementById("search");
+ if(s)s.value="";
+ save();
+ render();
+}function switchRoom(id){C().room=id;cat="Alle";const s=document.getElementById("search");if(s)s.value="";save();render()}function nextRoom(){
+ const c=C();
+ if(!c.rooms||!c.rooms.length)return;
+ const currentIndex=c.rooms.findIndex(x=>x.id===c.room);
+ const nextIndex=currentIndex<0?0:(currentIndex+1)%c.rooms.length;
+ c.room=c.rooms[nextIndex].id;
+ cat="Alle";
+ const s=document.getElementById("search");
+ if(s)s.value="";
+ save();
+ render();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function setBrand(b){const c=C();if(c.brand===b)return;c.brand=b;c.rooms.forEach(r=>{let g=r.groups.find(x=>x.title==="Rahmen");if(!g){g={title:"Rahmen",items:[]};r.groups.push(g)}const old={};g.items.forEach(i=>old[i.name]=i.count);const std=["1-fach Rahmen","2-fach Rahmen","3-fach Rahmen","4-fach Rahmen","5-fach Rahmen","503 Rahmen","504 Rahmen","507 Rahmen"],custom=g.items.filter(i=>!std.includes(i.name));g.items=[...frameMap[b].map(n=>({name:n,count:old[n]||0})),...custom]});save();render()}
+
+function deleteProjectFromList(id){
+ const c=data.customers.find(x=>x.id===id);
+ if(!c)return;
+ modal("Projekt löschen",`<p>Projekt/Kunde <b>${esc(c.name)}</b> wirklich löschen?</p>`,()=>{
+   if(data.customers.length<=1){
+     alert("Mindestens ein Projekt muss bestehen bleiben.");
+     return;
+   }
+   data.customers=data.customers.filter(x=>x.id!==id);
+   if(data.current===id)data.current=data.customers[0].id;
+   save();
+   closeModal();
+   render();
+   openProjects();
+ });
+}
+
+
+function isBlankStartProject(c){
+ if(!c||!c.startPlaceholder)return false;
+ const hasMeta=String(c.project||"").trim()||String(c.address||"").trim()||String(c.note||"").trim();
+ const hasApartmentNames=c.apartmentCustomers&&Object.values(c.apartmentCustomers).some(v=>String(v||"").trim());
+ const hasCounts=(c.rooms||[]).some(r=>(r.groups||[]).some(g=>(g.items||[]).some(i=>Number(i.count||0)>0)));
+ return !hasMeta&&!hasApartmentNames&&!hasCounts;
+}
+
+function createFreshStartProject(){
+ const r=mkRoom("Allgemein","Gira");
+ r.apartment="Allgemein";
+ const c={
+   id:uid(),
+   name:"Neues Projekt",
+   project:"",
+   address:"",
+   date:currentDateISO(),
+   note:"",
+   brand:"Gira",
+   room:r.id,
+   rooms:[r],
+   projectDone:false,
+   startPlaceholder:true
+ };
+ data.customers.push(c);
+ data.current=c.id;
+ return c;
+}
+
+function chooseProjectForStart(){
+ data.current="";
+}
+
+function finishCurrentProject(){
+ const c=C();
+ if(!c)return;
+ modal("Projekt fertig",`
+   <p><b>${esc(c.name)}</b>${c.project?` – ${esc(c.project)}`:""} als fertig markieren?</p>
+   <p style="font-size:13px;color:#64748b">Das Projekt bleibt unter „Projekte“ gespeichert. Danach erscheint wieder der neutrale Start.</p>
+ `,()=>{
+   c.projectDone=true;
+   c.finishedDate=currentDateISO();
+   c.startPlaceholder=false;
+   data.current="";
+   save();
+   closeModal();
+   render();
+ });
+}
+
+function reopenFinishedProject(id){
+ const c=data.customers.find(x=>x.id===id);
+ if(!c)return;
+ c.projectDone=false;
+ c.finishedDate="";
+ c.startPlaceholder=false;
+ data.current=id;
+ save();
+ closeModal();
+ render();
+}
+
+function openProjects(){
+ const visible=data.customers.filter(c=>!isBlankStartProject(c));
+ const list=visible.map(c=>{
+   const active=c.id===data.current;
+   const done=!!c.projectDone;
+   const project=c.project?`<div style="font-size:12px;color:#64748b;margin-top:2px">${esc(c.project)}</div>`:"";
+   const status=done?`<div style="font-size:12px;color:#166534;font-weight:900;margin-top:3px">✓ Fertig${c.finishedDate?" · "+esc(c.finishedDate):""}</div>`:"";
+   return `<div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:7px">
+     <button class="btn" style="width:100%;text-align:left;${active?"border:2px solid #2563eb;background:#eff6ff":""}${done?";background:#f0fdf4":""}" onclick="selectProject('${c.id}')">
+       <b>${esc(c.name)}</b>${project}${status}
+     </button>
+     <button class="btn danger" onclick="deleteProjectFromList('${c.id}')">🗑️</button>
+   </div>`;
+ }).join("");
+ modal("Projekte",`
+   <div style="max-height:55vh;overflow:auto">${list||"<p>Noch keine gespeicherten Projekte vorhanden.</p>"}</div>
+   <button class="btn primary" style="width:100%;margin-top:8px" onclick="closeModal();newCustomer()">+ Neues Projekt / Kunde</button>
+ `,closeModal);
+}
+function selectProject(id){
+ const c=data.customers.find(x=>x.id===id);
+ if(!c)return;
+ data.current=id;
+ cat="Alle";
+ save();
+ closeModal();
+ render();
+}
+function newCustomer(){modal("Neuer Kunde",`<input id="xName" placeholder="Kundenname"><input id="xProject" placeholder="Projekt / Baustelle" style="margin-top:8px"><input id="xAddress" placeholder="Adresse" style="margin-top:8px"><input id="xDate" type="date" value="${currentDateISO()}" style="margin-top:8px"><textarea id="xNote" placeholder="Notiz" style="margin-top:8px"></textarea>`,()=>{const n=document.getElementById("xName").value.trim();if(!n)return;const r=mkRoom("Allgemein","Gira"),c={id:uid(),name:n,project:document.getElementById("xProject").value,address:document.getElementById("xAddress").value,date:document.getElementById("xDate").value,note:document.getElementById("xNote").value,brand:"Gira",room:r.id,rooms:[r]};data.customers.push(c);data.current=c.id;save();closeModal();render()})}
+function editCustomer(){const c=C();modal("Kunde bearbeiten",`<input id="xName" value="${esc(c.name)}"><input id="xProject" value="${esc(c.project||"")}" style="margin-top:8px"><input id="xAddress" value="${esc(c.address||"")}" style="margin-top:8px"><input id="xDate" type="date" value="${esc(c.date||"")}" style="margin-top:8px"><textarea id="xNote" style="margin-top:8px">${esc(c.note||"")}</textarea>`,()=>{c.name=document.getElementById("xName").value.trim()||c.name;c.project=document.getElementById("xProject").value;c.address=document.getElementById("xAddress").value;c.date=document.getElementById("xDate").value;c.note=document.getElementById("xNote").value;c.startPlaceholder=false;save();closeModal();render()})}
+function deleteCustomer(){if(data.customers.length===1)return alert("Mindestens ein Kunde muss bleiben.");const c=C();modal("Kunde löschen",`<p><b>${esc(c.name)}</b> wirklich löschen?</p>`,()=>{data.customers=data.customers.filter(x=>x.id!==c.id);data.current=data.customers[0].id;save();closeModal();render()})}
+function newRoom(){
+ modal("Neuer Raum",`
+   <label style="font-size:12px;font-weight:800;color:#64748b">Raum auswählen</label>
+   <select id="xRoomSelect" style="margin-top:5px" onchange="roomPresetChanged()">
+     <option value="">Bitte auswählen …</option>
+     <option value="Gang">Gang</option><option value="Küche">Küche</option><option value="Elternzimmer">Elternzimmer</option><option value="Kinderzimmer 1">Kinderzimmer 1</option><option value="Kinderzimmer 2">Kinderzimmer 2</option><option value="Kinderzimmer 3">Kinderzimmer 3</option><option value="Tages WC">Tages WC</option><option value="Bad">Bad</option><option value="Abstellraum">Abstellraum</option><option value="Wohnküche">Wohnküche</option><option value="Balkon">Balkon</option><option value="Terrasse">Terrasse</option><option value="Wohnzimmer">Wohnzimmer</option><option value="Schlafzimmer">Schlafzimmer</option><option value="Büro">Büro</option><option value="Technikraum">Technikraum</option><option value="Keller">Keller</option><option value="Garage">Garage</option><option value="Vorraum">Vorraum</option><option value="Speis">Speis</option><option value="Waschraum">Waschraum</option><option value="Stiegenhaus">Stiegenhaus</option><option value="Außenbereich">Außenbereich</option>
+     <option value="__own__">+ Eigener Raum …</option>
+   </select>
+   <input id="xRoomOwn" placeholder="Eigenen Raumnamen eingeben" style="margin-top:8px;display:none">
+ `,()=>{
+   const sel=document.getElementById("xRoomSelect");
+   const own=document.getElementById("xRoomOwn");
+   const n=(sel.value==="__own__"?own.value:sel.value).trim();
+   if(!n)return;
+   const r=mkRoom(n,C().brand);r.apartment=currentApartment();C().rooms.push(r);C().room=r.id;save();closeModal();render()
+ })
+}
+function roomPresetChanged(){
+ const sel=document.getElementById("xRoomSelect"),own=document.getElementById("xRoomOwn");
+ own.style.display=sel.value==="__own__"?"block":"none";
+ if(sel.value==="__own__")setTimeout(()=>own.focus(),50);
+}
+function editRoom(){const r=R();modal("Raum bearbeiten",`<input id="xRoom" value="${esc(r.name)}">`,()=>{const n=document.getElementById("xRoom").value.trim();if(!n)return;r.name=n;save();closeModal();render()})}
+function deleteCurrentApartment(){
+ const c=C();
+ const apEl=document.getElementById("startApartment");
+ const ap=apEl&&apEl.value?apEl.value:((R()&&R().apartment)||"Allgemein");
+ const apartmentRooms=(c.rooms||[]).filter(r=>(r.apartment||"Allgemein")===ap);
+ if(!apartmentRooms.length)return;
+
+ modal("Wohnung löschen",`<p><b>${esc(ap)}</b> mit allen zugehörigen Räumen wirklich löschen?</p>`,()=>{
+   if(c.rooms.length===apartmentRooms.length){
+     const r=mkRoom("Allgemein",c.brand);
+     r.apartment="Allgemein";
+     c.rooms=[r];
+     c.room=r.id;
+   }else{
+     const ids=new Set(apartmentRooms.map(r=>r.id));
+     c.rooms=c.rooms.filter(r=>!ids.has(r.id));
+     if(!c.rooms.some(r=>r.id===c.room))c.room=c.rooms[0].id;
+   }
+   if(c.apartmentDone)delete c.apartmentDone[ap];
+   if(c.apartmentCustomers)delete c.apartmentCustomers[ap];
+   cat="Alle";
+   save();
+   closeModal();
+   render();
+ });
+}
+
+function deleteRoom(){const c=C(),r=R();if(c.rooms.length===1)return alert("Mindestens ein Raum muss bleiben.");modal("Raum löschen",`<p><b>${esc(r.name)}</b> wirklich löschen?</p>`,()=>{c.rooms=c.rooms.filter(x=>x.id!==r.id);c.room=c.rooms[0].id;save();closeModal();render()})}
+function newCategory(){modal("Neue Kategorie",`<input id="xCat" placeholder="Kategorie">`,()=>{const n=document.getElementById("xCat").value.trim();if(!n)return;if(R().groups.some(g=>g.title.toLowerCase()===n.toLowerCase()))return alert("Kategorie existiert bereits.");R().groups.push({title:n,items:[]});save();closeModal();render()})}
+function editCategory(gi){const r=R(),g=r.groups[gi];modal("Kategorie bearbeiten",`<input id="xCatEdit" value="${esc(g.title)}">`,()=>{const el=document.getElementById("xCatEdit"),n=el.value.trim();if(!n)return;if(r.groups.some((x,i)=>i!==gi&&x.title.toLowerCase()===n.toLowerCase()))return alert("Kategorie existiert bereits.");g.title=n;save();closeModal();render()})}
+function deleteCategory(gi){const r=R(),g=r.groups[gi];modal("Kategorie löschen",`<p><b>${esc(g.title)}</b> wirklich löschen?</p><p style="color:#dc2626;font-size:13px">Alle Positionen und Zählwerte dieser Kategorie in diesem Raum werden gelöscht.</p>`,()=>{r.groups.splice(gi,1);cat="Alle";save();closeModal();render()})}
+function newPosition(gi){const g=R().groups[gi];modal("Neue Position",`<input id="xPos" placeholder="Position"><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="xAll" type="checkbox" style="width:auto"> In allen Räumen hinzufügen</label>`,()=>{const n=document.getElementById("xPos").value.trim();if(!n)return;(document.getElementById("xAll").checked?C().rooms:[R()]).forEach(r=>{let gg=r.groups.find(x=>x.title===g.title);if(!gg){gg={title:g.title,items:[]};r.groups.push(gg)}if(!gg.items.some(i=>i.name.toLowerCase()===n.toLowerCase()))gg.items.push({name:n,count:0})});save();closeModal();render()})}
+
+
+function movePositionUp(gi,ii){
+ const g=R().groups[gi];
+ if(!g||ii<=0)return;
+ const tmp=g.items[ii-1];
+ g.items[ii-1]=g.items[ii];
+ g.items[ii]=tmp;
+ save();
+ render();
+}
+
+function movePositionDown(gi,ii){
+ const g=R().groups[gi];
+ if(!g||ii<0||ii>=g.items.length-1)return;
+ const tmp=g.items[ii+1];
+ g.items[ii+1]=g.items[ii];
+ g.items[ii]=tmp;
+ save();
+ render();
+}
+
+function editPosition(gi,ii){const g=R().groups[gi],i=g.items[ii];modal("Position bearbeiten",`<input id="xPos" value="${esc(i.name)}"><button id="delPos" class="btn danger" style="width:100%;margin-top:10px">Position löschen</button>`,()=>{const n=document.getElementById("xPos").value.trim();if(n)i.name=n;save();closeModal();render()});setTimeout(()=>document.getElementById("delPos").onclick=()=>{g.items.splice(ii,1);save();closeModal();render()},0)}
+function resetCustomer(){modal("Zählwerte zurücksetzen",`<p>Alle Mengen für <b>${esc(C().name)}</b> auf 0 setzen?</p>`,()=>{C().rooms.forEach(r=>r.groups.forEach(g=>g.items.forEach(i=>i.count=0)));save();closeModal();render()})}
+
+function buildDetailedOrderData(){
+ const c=C(),apartments=[],grand={},categoryOrder=[],apartmentMap={};
+ (c.rooms||[]).forEach(r=>{
+   const cats=[];
+   (r.groups||[]).forEach(g=>{
+     const used=(g.items||[]).filter(i=>Number(i.count||0)>0);
+     if(!used.length)return;
+     const items=used.map(i=>({name:i.name,count:Number(i.count||0),unit:unitForItem(i.name)}));
+     cats.push({title:g.title,items});
+     if(!grand[g.title]){grand[g.title]={};categoryOrder.push(g.title);}
+     items.forEach(i=>{
+       if(!grand[g.title][i.name])grand[g.title][i.name]={count:0,unit:i.unit};
+       grand[g.title][i.name].count+=i.count;
+     });
+   });
+   if(!cats.length)return;
+   const apName=r.apartment||"Allgemein";
+   if(!apartmentMap[apName]){
+     apartmentMap[apName]={name:apName,customerName:apartmentCustomerName(apName),rooms:[],totals:{},totalOrder:[]};
+     apartments.push(apartmentMap[apName]);
+   }
+   const ap=apartmentMap[apName];
+   ap.rooms.push({name:r.name,categories:cats});
+   cats.forEach(cat=>{
+     if(!ap.totals[cat.title]){ap.totals[cat.title]={};ap.totalOrder.push(cat.title);}
+     cat.items.forEach(i=>{
+       if(!ap.totals[cat.title][i.name])ap.totals[cat.title][i.name]={count:0,unit:i.unit};
+       ap.totals[cat.title][i.name].count+=i.count;
+     });
+   });
+ });
+ return {customer:c,apartments,grand,categoryOrder};
+}
+function formatQty(v,u){
+ return u==="m" ? String(Math.round(Number(v||0)*100)/100).replace(".",",") : String(Math.round(Number(v||0)));
+}
+function detailedPrintHtml(){
+ const d=buildDetailedOrderData(),c=d.customer;
+
+ const renderRows=(items,green=false)=>{
+   return items.map(i=>`
+     <tr${green?' class="pdfSumRow"':''}>
+       <td>${esc(i.name)}</td>
+       <td class="pdfQty">${formatQty(i.count,i.unit)} ${esc(i.unit)}</td>
+     </tr>`).join("");
+ };
+
+ const table=(items,green=false)=>`
+   <table class="${green?'pdfSumTable':'pdfRoomTable'}">
+     <thead>
+       <tr><th>Position</th><th class="pdfQty">Menge</th></tr>
+     </thead>
+     <tbody>${renderRows(items,green)}</tbody>
+   </table>`;
+
+ let h=`<div class="pdfDocument">`;
+
+ d.apartments.forEach((ap,index)=>{
+   h+=`<section class="pdfPage">`;
+
+   if(index===0){
+     h+=`
+       <div class="pdfTopTitle">ESB Zählliste - ${esc(c.project||c.name||"Beispielprojekt")}</div>
+       <div class="pdfMeta"><b>Kunde / Projekt:</b> ${esc(c.name)}${c.project?` - ${esc(c.project)}`:""}</div>
+       <div class="pdfMeta"><b>Schalterprogramm:</b> ${esc(c.brand)} &nbsp;&nbsp; <b>Ausgabe:</b> Wohnung → Räume → Wohnungssumme → Projekt-Gesamtsumme</div>
+       <div class="pdfMeta"><b>Datum:</b> ${currentDateDE()}</div>
+     `;
+   }
+
+   h+=`<h1 class="pdfApartmentTitle">${esc(ap.name)}</h1>`;
+   if(ap.customerName){
+     h+=`<div class="pdfApartmentCustomer"><b>Kunde/Bewohner:</b> ${esc(ap.customerName)}</div>`;
+   }
+
+   ap.rooms.forEach(r=>{
+     h+=`<h2 class="pdfRoomTitle">${esc(r.name)}</h2>`;
+     const flat=[];
+     r.categories.forEach(cat=>{
+       cat.items.forEach(i=>flat.push(i));
+     });
+     h+=table(flat,false);
+   });
+
+   const apartmentItems=[];
+   ap.totalOrder.forEach(cat=>{
+     Object.entries(ap.totals[cat]||{}).forEach(([name,o])=>{
+       if(Number(o.count||0)>0)apartmentItems.push({name,...o});
+     });
+   });
+
+   h+=`<h2 class="pdfApartmentSumTitle">Summe ${esc(ap.name)}</h2>`;
+   h+=table(apartmentItems,true);
+   h+=`</section>`;
+ });
+
+ const totalItems=[];
+ d.categoryOrder.forEach(cat=>{
+   Object.entries(d.grand[cat]||{}).forEach(([name,o])=>{
+     if(Number(o.count||0)>0)totalItems.push({name,...o});
+   });
+ });
+
+ h+=`
+   <section class="pdfPage pdfTotalPage">
+     <h1 class="pdfTotalTitle">GESAMTSUMME / BESTELLLISTE PROJEKT</h1>
+     <div class="pdfTotalSub">Alle Wohnungen zusammengezählt</div>
+     ${table(totalItems,true)}
+   </section>
+ </div>`;
+
+ return h;
+}
+function detailedOrderText(){
+ const d=buildDetailedOrderData(),c=d.customer;
+ const lines=[];
+ lines.push(`KUNDE / PROJEKT: ${c.name}`);
+ if(c.project)lines.push(`Projekt: ${c.project}`);
+ if(c.address)lines.push(`Adresse: ${c.address}`);
+ lines.push(`Schalterprogramm: ${c.brand}`);
+ lines.push(`Datum: ${currentDateDE()}`);
+ lines.push("");
+ d.apartments.forEach(ap=>{
+   lines.push(`WOHNUNG: ${ap.name}${(c.apartmentDone&&c.apartmentDone[ap.name])?" ✓":""}`);
+   if(ap.customerName)lines.push(`Kunde/Bewohner: ${ap.customerName}`);
+   lines.push("");
+   ap.rooms.forEach(r=>{
+     lines.push(`RAUM: ${r.name}`);
+     r.categories.forEach(cat=>{
+       lines.push(cat.title.toUpperCase());
+       cat.items.forEach(i=>lines.push(`${i.name}: ${formatQty(i.count,i.unit)} ${i.unit}`));
+       lines.push("");
+     });
+   });
+   lines.push(`SUMME ${ap.name.toUpperCase()}`);
+   ap.totalOrder.forEach(cat=>{
+     const used=Object.entries(ap.totals[cat]||{}).filter(([_,v])=>Number(v.count||0)>0);
+     if(!used.length)return;
+     lines.push(cat.toUpperCase());
+     used.forEach(([name,o])=>lines.push(`${name}: ${formatQty(o.count,o.unit)} ${o.unit}`));
+     lines.push("");
+   });
+ });
+ lines.push("HAUPTLISTE / GESAMTSUMME PROJEKT");
+ d.categoryOrder.forEach(cat=>{
+   const used=Object.entries(d.grand[cat]||{}).filter(([_,v])=>Number(v.count||0)>0);
+   if(!used.length)return;
+   lines.push(cat.toUpperCase());
+   used.forEach(([name,o])=>lines.push(`${name}: ${formatQty(o.count,o.unit)} ${o.unit}`));
+   lines.push("");
+ });
+ return lines.join("\\n");
+}
+
+function aggregate(){const c=C(),tot={},order=[];c.rooms.forEach(r=>r.groups.forEach(g=>{if(!tot[g.title]){tot[g.title]={};order.push(g.title)}g.items.forEach(i=>tot[g.title][i.name]=(tot[g.title][i.name]||0)+Number(i.count||0))}));return{c,tot,order}}
+function renderSummary(){const{c,tot,order}=aggregate();summary.innerHTML="";printHead.innerHTML=`<div style="font-size:13px;font-weight:700;color:#555">KUNDE / PROJEKT</div><h1 style="margin:2px 0 8px;font-size:26px">${esc(c.name)}</h1>${c.project?`<div><b>Projekt:</b> ${esc(c.project)}</div>`:""}${c.address?`<div><b>Adresse:</b> ${esc(c.address)}</div>`:""}<div><b>Schalterprogramm:</b> ${esc(c.brand)}</div><div><b>Datum:</b> ${currentDateDE()}</div>${c.note?`<div><b>Notiz:</b> ${esc(c.note)}</div>`:""}`;let any=false;order.forEach(k=>{const u=Object.entries(tot[k]).filter(x=>x[1]>0);if(!u.length)return;any=true;const h=document.createElement("div");h.className="sectionTitle";h.style.marginTop="12px";h.textContent=k;summary.appendChild(h);u.forEach(([n,v])=>{const e=document.createElement("div");e.className="sum";e.innerHTML=`<span>${esc(n)}</span><b>${v}</b>`;summary.appendChild(e)})});if(!any)summary.innerHTML='<span style="color:#94a3b8">Noch nichts gezählt.</span>'}
+function listText(){const{c,tot,order}=aggregate(),a=[`BESTELLLISTE – ${c.name}`,`Schalterprogramm: ${c.brand}`];if(c.project)a.push(`Projekt: ${c.project}`);if(c.address)a.push(`Adresse: ${c.address}`);a.push(`Datum: ${currentDateDE()}`);a.push("");order.forEach(k=>{const u=Object.entries(tot[k]).filter(x=>x[1]>0);if(!u.length)return;a.push(k.toUpperCase());u.forEach(([n,v])=>a.push(`${n}: ${v}`));a.push("")});return a.join("\n")}
+async function copyList(){
+ const text=detailedOrderText();
+ try{await navigator.clipboard.writeText(text);alert("Bestellliste kopiert.");}
+ catch(e){modal("Bestellliste",`<textarea style="height:260px">${esc(text)}</textarea>`,closeModal);}
+}
+function buildPdfDocumentHtml(){
+ let css=[...document.querySelectorAll("style")].map(s=>s.textContent||"").join("\\n");
+ // The Android PDF WebView renders off-screen in screen mode.
+ // Apply the print rules there as normal rules so PDF and print look identical.
+ css=css.replace(/@media\\s+print\\s*\\{/g,"@media all{");
+ return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style></head><body><div id="printHead">${detailedPrintHtml()}</div></body></html>`;
+}
+function printList(){
+ if(!C()){
+   alert("Bitte zuerst ein Projekt auswählen.");
+   return;
+ }
+
+ const title=`ESB Zählliste - ${C().name} - ${currentDateDE()}`;
+ const pdfHtml=buildPdfDocumentHtml();
+
+ if(typeof window!=="undefined" && window.AndroidApp && typeof window.AndroidApp.openExactHtmlPdf==="function"){
+   window.AndroidApp.openExactHtmlPdf(title,pdfHtml);
+   return;
+ }
+
+ const ph=document.getElementById("printHead");
+ if(!ph)return;
+ const old=ph.innerHTML,oldTitle=document.title;
+ ph.innerHTML=detailedPrintHtml();
+ document.title=title;
+ setTimeout(()=>{
+   window.print();
+   setTimeout(()=>{ph.innerHTML=old;document.title=oldTitle;},500);
+ },120);
+}
+
+function buildEmailPdfData(){
+ const d=buildDetailedOrderData(),c=d.customer;
+ const out={
+   title:`ESB Zählliste - ${c.project||c.name||"Projekt"}`,
+   customer:c.name||"",
+   project:c.project||"",
+   brand:c.brand||"",
+   date:currentDateDE(),
+   apartments:[],
+   grand:[]
+ };
+
+ d.apartments.forEach(ap=>{
+   const a={
+     name:ap.name,
+     customerName:ap.customerName||"",
+     rooms:[],
+     totals:[]
+   };
+
+   ap.rooms.forEach(r=>{
+     const items=[];
+     r.categories.forEach(cat=>{
+       cat.items.forEach(i=>{
+         items.push({name:i.name,count:Number(i.count||0),unit:i.unit||"Stk."});
+       });
+     });
+     a.rooms.push({name:r.name,items});
+   });
+
+   ap.totalOrder.forEach(cat=>{
+     Object.entries(ap.totals[cat]||{}).forEach(([name,o])=>{
+       if(Number(o.count||0)>0){
+         a.totals.push({name,count:Number(o.count||0),unit:o.unit||"Stk."});
+       }
+     });
+   });
+
+   out.apartments.push(a);
+ });
+
+ d.categoryOrder.forEach(cat=>{
+   Object.entries(d.grand[cat]||{}).forEach(([name,o])=>{
+     if(Number(o.count||0)>0){
+       out.grand.push({name,count:Number(o.count||0),unit:o.unit||"Stk."});
+     }
+   });
+ });
+
+ return JSON.stringify(out);
+}
+
+async function shareList(){
+ if(!C()){
+   alert("Bitte zuerst ein Projekt auswählen.");
+   return;
+ }
+
+ const title=`ESB Zählliste - ${C().name} - ${currentDateDE()}`;
+ const text=detailedOrderText();
+ const pdfHtml=buildPdfDocumentHtml();
+
+ if(typeof window!=="undefined" && window.AndroidApp && typeof window.AndroidApp.sendExactHtmlPdfEmail==="function"){
+   window.AndroidApp.sendExactHtmlPdfEmail(title,pdfHtml,text);
+   return;
+ }
+
+ if(navigator.share){
+   try{
+     await navigator.share({title,text});
+     return;
+   }catch(e){
+     if(e && e.name==="AbortError") return;
+   }
+ }
+ try{
+   await navigator.clipboard.writeText(text);
+   alert("Bestellliste kopiert. Du kannst sie jetzt in Mail oder WhatsApp einfügen. Für eine PDF bitte 'PDF / Drucken' verwenden.");
+ }catch(e){
+   modal("Bestellliste",`<textarea style="height:260px">${esc(text)}</textarea>`,closeModal);
+ }
+}
+function backup(){const json=JSON.stringify(data,null,2);if(window.AndroidApp&&AndroidApp.saveBackup){AndroidApp.saveBackup(json);return}const b=new Blob([json],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=`ESB_Zaehlliste_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function restore(){const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=()=>{const f=i.files&&i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.customers)||!d.customers.length)throw 0;data=d;save();render();alert("Sicherung geladen.")}catch{alert("Ungültige Sicherung.")}};r.readAsText(f)};i.click()}
+
+function migrateKNX(){
+ const defs=[
+  ["KNX – Verteilung",["Spannungsversorgung","Gira X1","Gira S1","Spannungsversorgung Wetterstation","Wetterstation","Heizungsaktor","Schaltaktor 8-fach","Schaltaktor 24-fach","Jalousieaktor","Dimmaktor","Binäreingang 24 V","Binäreingang 230 V","DALI Gateway"]],
+  ["KNX – Schaltung",["Tastsensor 1-fach","Tastsensor 2-fach","Tastsensor 3-fach","Tastsensor 4-fach","BA Taster 1-fach","BA Taster 2-fach","Thermostat Bus","Gira G1"]],["Sonstiges",["Videosprechanlage","Notlampe Wand","Unterputznotlampe","Bewegungsmelder 360 ° unterputz","Bewegungsmelder 1,10 Mt unterputz","Verteilung TV"]]
+ ];
+ data.customers.forEach(c=>c.rooms.forEach(r=>defs.forEach(([title,names])=>{
+   let g=r.groups.find(x=>x.title===title);
+   if(!g){g={title,items:[]};r.groups.push(g)}
+   names.forEach(name=>{if(!g.items.some(i=>i.name===name))g.items.push({name,count:0})});
+ })));
+ save();
+}
+migrateKNX();
+
+function migrateV7Extras(){
+ const additions=[
+   ["Auslässe",["Haloxdosen Kaiser","Auslass Kamera","Außenfühler","Auslass Innensirene Alarm","Auslass Schacht Garten","Leerrohrauslass"]],
+   ["Sonstiges",["Videosprechanlage","Notlampe Wand","Unterputznotlampe","Bewegungsmelder 360 ° unterputz","Bewegungsmelder 1,10 Mt unterputz","Verteilung TV"]]
+ ];
+ data.customers.forEach(c=>c.rooms.forEach(r=>additions.forEach(([title,names])=>{
+   let g=r.groups.find(x=>x.title===title);
+   if(!g){g={title,items:[]};r.groups.push(g)}
+   names.forEach(name=>{if(!g.items.some(i=>i.name===name))g.items.push({name,count:0})});
+ })));
+ save();
+}
+migrateV7Extras();
+
+function migrateV8Auslaesse(){
+ const names=["Auslass Ventilator","Auslass Lüftung","Auslass Klimagerät","Auslass Alarmkontakt","Auslass Bedienteil Alarm","Auslass Außensirene Alarm","Auslass Bewegungsmelder Alarm","Auslass Zentrale Alarm"];
+ data.customers.forEach(c=>c.rooms.forEach(r=>{
+   let g=r.groups.find(x=>x.title==="Auslässe");
+   if(!g){g={title:"Auslässe",items:[]};r.groups.push(g)}
+   names.forEach(name=>{if(!g.items.some(i=>i.name===name))g.items.push({name,count:0})});
+ }));
+ save();
+}
+migrateV8Auslaesse();
+function migrateV9Cleanup(){
+ data.customers.forEach(c=>c.rooms.forEach(r=>{
+   const src=r.groups.find(g=>g.title==="Schalter & Steckdosen");
+   let dst=r.groups.find(g=>g.title==="Sonstiges");
+   if(!dst){dst={title:"Sonstiges",items:[]};r.groups.push(dst)}
+   let target=dst.items.find(i=>i.name==="Videosprechanlage");
+   if(!target){target={name:"Videosprechanlage",count:0};dst.items.push(target)}
+   if(src){
+     const idx=src.items.findIndex(i=>i.name==="Videosprechanlage");
+     if(idx>=0){target.count+=Number(src.items[idx].count||0);src.items.splice(idx,1)}
+   }
+ }));save();
+}
+migrateV9Cleanup();
+
+function migrateV12PTDosen(){
+ const names=["Abzweigdose PT 3","Abzweigdose PT 4","Abzweigdose PT 5","Abzweigdose PT 6","Abzweigdose PT 7","Abzweigdose PT 8","Abzweigdose PT 9","Abzweigdose PT 10","Abzweigdose PT 11"];
+ data.customers.forEach(c=>c.rooms.forEach(r=>{
+   let g=r.groups.find(x=>x.title==="Sonstiges");
+   if(!g){g={title:"Sonstiges",items:[]};r.groups.push(g)}
+   names.forEach(name=>{if(!g.items.some(i=>i.name===name))g.items.push({name,count:0})});
+ }));
+ save();
+}
+migrateV12PTDosen();
+
+function migrateV13Beleuchtung(){
+ data.customers.forEach(c=>c.rooms.forEach(r=>{
+   if(!r.groups.some(g=>g.title==="Beleuchtung")){
+     r.groups.push({title:"Beleuchtung",items:[]});
+   }
+ }));
+ save();
+}
+migrateV13Beleuchtung();
+
+function migrateV7VerteilerComplete(){
+ const names=["LS 10 A","LS 16 A","FI 40 A / 30 mA","FI/LS 10 A","FI/LS 16 A","Hauptschalter","Überspannungsschutz","Klingeltrafo","Schütz","Stromstoßschalter","Astrouhr","Uhr"];
+ data.customers.forEach(c=>c.rooms.forEach(r=>{
+   let g=r.groups.find(x=>x.title==="Verteiler");
+   if(!g){g={title:"Verteiler",items:[]};r.groups.push(g)}
+   names.forEach(name=>{
+     if(!g.items.some(i=>i.name===name))g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+migrateV7VerteilerComplete();
+
+function migrateCompleteCatalog(){
+ const defs=[["Schalter & Steckdosen",["Schukosteckdose","Wechselschalter","Kreuzschalter","Serienschalter","Doppelwechselschalter","Rolloschalter","Rollotaster","Taster normal","Thermostate","Hauptthermostat","CAT6 Steckdosen","TV Steckdose","Zentral UAE 1-fach","Zentral UAE 2-fach","TV zentral","Blindabdeckung","USB Steckdose","Kabelauslass"]],["Wippen",["1-fach Wippen","Serienwippe","Jalousiewippe","Wippe mit Schriftfeld"]],["Auslässe",["LED Auslass","Lichtauslass","Auslass Markise","Auslass Abzugshaube","Auslass Kochinsel","Auslass Ventilator","Auslass Lüftung","Auslass Klimagerät","Auslass Alarmkontakt","Auslass Bedienteil Alarm","Auslass Außensirene Alarm","Auslass Bewegungsmelder Alarm","Auslass Zentrale Alarm","Auslass Kamera","Außenfühler","Auslass Innensirene Alarm","Auslass Schacht Garten","Leerrohrauslass"]],["Verteiler",["LS 10 A", "LS 16 A", "FI 40 A / 30 mA", "FI/LS 10 A", "FI/LS 16 A", "Hauptschalter", "Überspannungsschutz", "Klingeltrafo", "Schütz", "Stromstoßschalter", "Astrouhr", "Uhr", "Striebel & John 3 Reihig", "Striebel & John 4 Reihig", "Striebel & John Multimediaverteiler","LS 10 A 4 pol","LS 16 A 4 pol","FI Schutzschalter 40 A 4 pol","FI Schutzschalter 40 A 2 pol","Kippschalter 40 A 2 pol","Kippschalter 40 A 4 pol"]],["KNX – Verteilung",["Spannungsversorgung","Gira X1","Gira S1","Spannungsversorgung Wetterstation","Wetterstation","Heizungsaktor","Schaltaktor 8-fach","Schaltaktor 24-fach","Jalousieaktor","Dimmaktor","Binäreingang 24 V","Binäreingang 230 V","DALI Gateway"]],["KNX – Schaltung",["Tastsensor 1-fach","Tastsensor 2-fach","Tastsensor 3-fach","Tastsensor 4-fach","BA Taster 1-fach","BA Taster 2-fach","Thermostat Bus","Gira G1"]],["Beleuchtung",["Brilux Einbaustrahler","LED Strip","LED Schiene + Abdeckung Brilux U1","Kaiser Halox Dose"]],["Sonstiges",["Videosprechanlage","Notlampe Wand","Unterputznotlampe","Abzweigdose PT 3","Abzweigdose PT 4","Abzweigdose PT 5","Abzweigdose PT 6","Abzweigdose PT 7","Abzweigdose PT 8","Abzweigdose PT 9","Abzweigdose PT 10","Abzweigdose PT 11","Bewegungsmelder 360 ° unterputz","Bewegungsmelder 1,10 Mt unterputz","Verteilung TV"]]];
+ const standardFrames=["1-fach Rahmen","2-fach Rahmen","3-fach Rahmen","4-fach Rahmen","5-fach Rahmen","503 Rahmen","504 Rahmen","507 Rahmen"];
+
+ data.customers.forEach(c=>{
+   if(!c.brand)c.brand="Gira";
+   if(!Array.isArray(c.rooms))c.rooms=[];
+
+   c.rooms.forEach(r=>{
+     if(!Array.isArray(r.groups))r.groups=[];
+
+     // Move legacy Videosprechanlage from Schalter to Sonstiges, preserving its count.
+     let legacyVideoCount=0;
+     const switchGroup=r.groups.find(g=>g.title==="Schalter & Steckdosen");
+     if(switchGroup&&Array.isArray(switchGroup.items)){
+       const oldVideo=switchGroup.items.find(i=>i.name==="Videosprechanlage");
+       if(oldVideo)legacyVideoCount=Number(oldVideo.count||0);
+       switchGroup.items=switchGroup.items.filter(i=>i.name!=="Videosprechanlage");
+     }
+
+     // Merge every standard category and item. Own/custom items remain untouched.
+     defs.forEach(([title,names])=>{
+       let g=r.groups.find(x=>x.title===title);
+       if(!g){
+         g={title,items:[]};
+         r.groups.push(g);
+       }
+       if(!Array.isArray(g.items))g.items=[];
+
+       names.forEach(name=>{
+         const exists=g.items.some(i=>String(i.name).toLowerCase()===String(name).toLowerCase());
+         if(!exists)g.items.push({name,count:0});
+       });
+     });
+
+     // Restore/move Videosprechanlage count into Sonstiges if it existed in an old version.
+     if(legacyVideoCount>0){
+       const sg=r.groups.find(g=>g.title==="Sonstiges");
+       const vi=sg.items.find(i=>i.name==="Videosprechanlage");
+       if(vi)vi.count=Math.max(Number(vi.count||0),legacyVideoCount);
+     }
+
+     // Brand-correct frames only.
+     let fg=r.groups.find(g=>g.title==="Rahmen");
+     if(!fg){
+       fg={title:"Rahmen",items:[]};
+       r.groups.push(fg);
+     }
+     const wanted=(frameMap[c.brand]||frameMap.Gira);
+     const counts={};
+     fg.items.forEach(i=>counts[i.name]=Number(i.count||0));
+     const customFrames=fg.items.filter(i=>!standardFrames.includes(i.name));
+     fg.items=[
+       ...wanted.map(name=>({name,count:counts[name]||0})),
+       ...customFrames
+     ];
+
+     // Remove accidental duplicates in all categories, preserving the first count.
+     r.groups.forEach(g=>{
+       const seen=new Map();
+       (g.items||[]).forEach(i=>{
+         const key=String(i.name).trim().toLowerCase();
+         if(!seen.has(key))seen.set(key,{name:i.name,count:Number(i.count||0)});
+         else seen.get(key).count+=Number(i.count||0);
+       });
+       g.items=[...seen.values()];
+     });
+   });
+ });
+ save();
+}
+migrateCompleteCatalog();
+
+
+function repairVerteilerV12(){
+ const wanted=["LS 10 A", "LS 16 A", "FI 40 A / 30 mA", "FI/LS 10 A", "FI/LS 16 A", "Hauptschalter", "Überspannungsschutz", "Klingeltrafo", "Schütz", "Stromstoßschalter", "Astrouhr", "Uhr", "Striebel & John 3 Reihig", "Striebel & John 4 Reihig", "Striebel & John Multimediaverteiler"];
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Verteiler");
+   if(!g){g={title:"Verteiler",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   wanted.forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairVerteilerV12();
+
+
+function repairLightingV13(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Beleuchtung");
+   if(!g){g={title:"Beleuchtung",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   ["Brilux Einbaustrahler","LED Strip"].forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairLightingV13();
+
+
+function repairLightingV14(){
+ const wanted=["Brilux Einbaustrahler","LED Strip","LED Schiene + Abdeckung Brilux U1"];
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Beleuchtung");
+   if(!g){g={title:"Beleuchtung",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   wanted.forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairLightingV14();
+
+
+function migrateHaloxToLightingV17(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+
+   let oldCount=0;
+   const ag=r.groups.find(g=>g.title==="Auslässe");
+   if(ag&&Array.isArray(ag.items)){
+     ag.items=ag.items.filter(i=>{
+       const isOld=String(i.name).trim().toLowerCase()==="haloxdosen kaiser";
+       if(isOld)oldCount+=Number(i.count||0);
+       return !isOld;
+     });
+   }
+
+   let lg=r.groups.find(g=>g.title==="Beleuchtung");
+   if(!lg){
+     lg={title:"Beleuchtung",items:[]};
+     r.groups.push(lg);
+   }
+   if(!Array.isArray(lg.items))lg.items=[];
+
+   let target=lg.items.find(i=>String(i.name).trim().toLowerCase()==="kaiser halox dose");
+   if(!target){
+     target={name:"Kaiser Halox Dose",count:0};
+     lg.items.push(target);
+   }
+   if(oldCount>0)target.count=Number(target.count||0)+oldCount;
+ }));
+ save();
+}
+migrateHaloxToLightingV17();
+
+
+function repairVerticalFramesV19(){
+ const wanted=["1-fach Rahmen senkrecht","2-fach Rahmen senkrecht","3-fach Rahmen senkrecht","4-fach Rahmen senkrecht","5-fach Rahmen senkrecht"];
+ data.customers.forEach(c=>{
+   if(!["Berker","Gira","Jung"].includes(c.brand))return;
+   (c.rooms||[]).forEach(r=>{
+     let g=(r.groups||[]).find(x=>x.title==="Rahmen");
+     if(!g){g={title:"Rahmen",items:[]};r.groups.push(g);}
+     wanted.forEach(name=>{
+       if(!g.items.some(i=>i.name===name))g.items.push({name,count:0});
+     });
+   });
+ });
+ save();
+}
+repairVerticalFramesV19();
+
+
+function repairCameraOutletV20(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Auslässe");
+   if(!g){g={title:"Auslässe",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   if(!g.items.some(i=>String(i.name).trim().toLowerCase()==="auslass kamera"))
+     g.items.push({name:"Auslass Kamera",count:0});
+ }));
+ save();
+}
+repairCameraOutletV20();
+
+
+function repairWeatherstationFinal(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="KNX – Verteilung");
+   if(!g){g={title:"KNX – Verteilung",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   ["Spannungsversorgung Wetterstation","Wetterstation"].forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairWeatherstationFinal();
+
+
+function repairDistributorV8(){
+ const wanted=["LS 10 A 4 pol","LS 16 A 4 pol","FI Schutzschalter 40 A 4 pol","FI Schutzschalter 40 A 2 pol","Kippschalter 40 A 2 pol","Kippschalter 40 A 4 pol"];
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Verteiler");
+   if(!g){g={title:"Verteiler",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   wanted.forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairDistributorV8();
+
+
+function repairCatalogV9(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   [
+     {title:"Sonstiges",names:["Bewegungsmelder 360 ° unterputz","Bewegungsmelder 1,10 Mt unterputz","Verteilung TV"]},
+     {title:"Auslässe",names:["Außenfühler"]}
+   ].forEach(spec=>{
+     let group=r.groups.find(x=>x.title===spec.title);
+     if(!group){group={title:spec.title,items:[]};r.groups.push(group);}
+     if(!Array.isArray(group.items))group.items=[];
+     spec.names.forEach(name=>{
+       if(!group.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+         group.items.push({name,count:0});
+     });
+   });
+ }));
+ save();
+}
+repairCatalogV9();
+
+
+function migrateAussenfuehlerSpellingV10(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   const g=(r.groups||[]).find(x=>x.title==="Auslässe");
+   if(!g||!Array.isArray(g.items))return;
+   let oldCount=0;
+   g.items=g.items.filter(i=>{
+     const old=String(i.name).trim().toLowerCase()==="aussenfühler" || String(i.name).trim().toLowerCase()==="aussenfuehler";
+     if(old)oldCount+=Number(i.count||0);
+     return !old;
+   });
+   let target=g.items.find(i=>String(i.name).trim().toLowerCase()==="außenfühler");
+   if(!target){target={name:"Außenfühler",count:0};g.items.push(target);}
+   if(oldCount>0)target.count=Number(target.count||0)+oldCount;
+ }));
+ save();
+}
+migrateAussenfuehlerSpellingV10();
+
+
+function repairOutletV13(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Auslässe");
+   if(!g){g={title:"Auslässe",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   const name="Auslass Innensirene Alarm";
+   if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+     g.items.push({name,count:0});
+ }));
+ save();
+}
+repairOutletV13();
+
+
+function repairVimarBticinoFramesV14(){
+ data.customers.forEach(c=>{
+   const brand=String(c.brand||"").trim().toLowerCase();
+   if(brand!=="vimar" && brand!=="bticino")return;
+   const remove=new Set([
+     "2-fach rahmen","3-fach rahmen","4-fach rahmen","5-fach rahmen",
+     "2-fach rahmen senkrecht","3-fach rahmen senkrecht","4-fach rahmen senkrecht","5-fach rahmen senkrecht"
+   ]);
+   (c.rooms||[]).forEach(r=>(r.groups||[]).forEach(g=>{
+     if(g.title!=="Rahmen" || !Array.isArray(g.items))return;
+     g.items=g.items.filter(i=>!remove.has(String(i.name).trim().toLowerCase()));
+   }));
+ });
+ save();
+}
+repairVimarBticinoFramesV14();
+
+
+function repairOutletsV17(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   let g=r.groups.find(x=>x.title==="Auslässe");
+   if(!g){g={title:"Auslässe",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+   ["Auslass Schacht Garten","Leerrohrauslass"].forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairOutletsV17();
+
+
+function repairBrandSpecificItemsStable(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>{
+   if(!Array.isArray(r.groups))r.groups=[];
+   const brand=String(c.brand||"").trim().toLowerCase();
+   let g=r.groups.find(x=>x.title==="Schalter & Steckdosen");
+   if(!g){g={title:"Schalter & Steckdosen",items:[]};r.groups.push(g);}
+   if(!Array.isArray(g.items))g.items=[];
+
+   const removeNames=[
+     "lichtsteckdosen 10 a",
+     "lichtsteckdosen 10/16 a",
+     "berker radio"
+   ];
+   g.items=g.items.filter(i=>{
+     const n=String(i.name||"").trim().toLowerCase();
+     if(brand==="bticino"||brand==="vimar"){
+       return n!=="berker radio";
+     }
+     if(brand==="berker"){
+       return n!=="lichtsteckdosen 10 a" && n!=="lichtsteckdosen 10/16 a";
+     }
+     return !removeNames.includes(n);
+   });
+
+   const wanted=[];
+   if(brand==="bticino"||brand==="vimar"){
+     wanted.push("Lichtsteckdosen 10 A","Lichtsteckdosen 10/16 A");
+   }
+   if(brand==="berker"){
+     wanted.push("Berker Radio");
+   }
+   wanted.forEach(name=>{
+     if(!g.items.some(i=>String(i.name).trim().toLowerCase()===name.toLowerCase()))
+       g.items.push({name,count:0});
+   });
+ }));
+ save();
+}
+repairBrandSpecificItemsStable();
+
+
+function migrateSchukoStable(){
+ data.customers.forEach(c=>(c.rooms||[]).forEach(r=>(r.groups||[]).forEach(g=>{
+   if(!Array.isArray(g.items))return;
+   let oldCount=0;
+   g.items=g.items.filter(i=>{
+     const n=String(i.name||"").trim().toLowerCase();
+     const old=(n==="steckdose"||n==="steckdosen");
+     if(old)oldCount+=Number(i.count||0);
+     return !old;
+   });
+   if(g.title==="Schalter & Steckdosen"){
+     let target=g.items.find(i=>String(i.name||"").trim().toLowerCase()==="schukosteckdose");
+     if(!target){target={name:"Schukosteckdose",count:0};g.items.unshift(target);}
+     if(oldCount>0)target.count=Number(target.count||0)+oldCount;
+   }
+ })));
+ save();
+}
+migrateSchukoStable();
+
+
+function isIOSDevice(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)}
+function isStandaloneMode(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+function showInstallHintOnce(){
+  if(!isIOSDevice()||isStandaloneMode())return;
+  try{if(localStorage.getItem("esb_ipad_install_hint_v1"))return;localStorage.setItem("esb_ipad_install_hint_v1","1")}catch(e){}
+  setTimeout(()=>{
+    modal("Auf dem iPad installieren",`<p>Für die beste Nutzung in Safari auf <b>Teilen</b> tippen und <b>Zum Home-Bildschirm</b> wählen.</p><p style="font-size:13px;color:#64748b">Danach startet die ESB Zählliste wie eine eigene App und kann nach dem ersten Laden auch offline verwendet werden.</p>`,closeModal);
+  },700);
+}
+render();
+if("serviceWorker"in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
+window.addEventListener("load",showInstallHintOnce);
+
+
+function restoreAfterPrint(){
+ if(!window.__esbPrintBackup)return;
+ const ph=document.getElementById("printHead");
+ if(ph)ph.innerHTML=window.__esbPrintBackup.html;
+ document.title=window.__esbPrintBackup.title||"ESB Zählliste";
+ document.body.classList.remove("esbPrinting");
+ window.__esbPrintBackup=null;
+ render();
+}
+let __esbPrintTriggeredAt=0;
+window.addEventListener("blur",()=>{ if(window.__esbPrintBackup)__esbPrintTriggeredAt=Date.now(); });
+window.addEventListener("focus",()=>{
+ if(window.__esbPrintBackup && __esbPrintTriggeredAt && Date.now()-__esbPrintTriggeredAt>500){
+   setTimeout(restoreAfterPrint,700);
+ }
+});
+document.addEventListener("visibilitychange",()=>{
+ if(document.visibilityState==="visible" && window.__esbPrintBackup && __esbPrintTriggeredAt && Date.now()-__esbPrintTriggeredAt>500){
+   setTimeout(restoreAfterPrint,700);
+ }
+});
+
+</script></body></html>
