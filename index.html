@@ -1381,13 +1381,6 @@ function buildProfessionalPdfBlob(){
   // 1) Gesamtbestellliste zuerst
   startPage("GESAMTBESTELLLISTE",pdfSafeText(c.project||c.name||"Projekt"));
   metaGrid();
-  const units=unitTotals();
-  rect(left,y-2,contentW,42,[0.93,0.98,0.90],[0.73,0.84,0.62]);
-  text(left+14,y+12,"GESAMTSTÜCKZAHL",10,true,dark);
-  text(left+145,y+8,String(Math.round(units.pieces)),22,true,blue);
-  text(left+205,y+12,"Stk.",10,true,dark);
-  if(units.meters>0){text(left+300,y+12,"GESAMTMETER",10,true,dark);text(left+405,y+8,formatQty(units.meters,"m"),18,true,blue);text(left+465,y+12,"m",10,true,dark);}
-  y-=58;
   d.categoryOrder.forEach(cat=>{
     const used=Object.entries(d.grand[cat]||{}).filter(([_,o])=>Number(o.count||0)>0);
     if(!used.length)return;
